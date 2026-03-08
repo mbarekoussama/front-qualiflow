@@ -4,9 +4,9 @@
       <h1 class="text-2xl font-semibold">Indicateurs de performance (KPI)</h1>
       <p class="text-sm text-slate-500">Suivi des indicateurs qualité par processus</p>
     </div>
-    <div class="flex items-center gap-3">
+    <div class="flex w-full flex-wrap items-center gap-3 lg:w-auto">
       <select
-        class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600"
+        class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
         [value]="processusFilter()"
         (change)="updateProcessusFilter($any($event.target).value)"
       >

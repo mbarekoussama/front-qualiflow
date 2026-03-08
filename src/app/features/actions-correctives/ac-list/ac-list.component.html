@@ -26,9 +26,9 @@
   </div>
 
   <!-- Filters -->
-  <div class="flex flex-wrap items-center gap-3">
+  <div class="flex flex-wrap gap-3 sm:items-center">
     <select
-      class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600"
+      class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
       [value]="ncFilter()"
       (change)="updateNcFilter($any($event.target).value)"
     >
@@ -37,7 +37,7 @@
       }
     </select>
     <select
-      class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600"
+      class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
       [value]="statutFilter()"
       (change)="updateStatutFilter($any($event.target).value)"
     >
@@ -52,7 +52,8 @@
 
   <!-- Table -->
   <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-    <table class="w-full text-sm">
+    <div class="overflow-x-auto">
+      <table class="w-full min-w-[900px] text-sm">
       <thead class="bg-slate-50 border-b border-slate-200">
         <tr class="text-left text-xs uppercase tracking-[0.15em] text-slate-500">
           <th class="px-5 py-3">Réf.</th>
@@ -112,6 +113,7 @@
           </tr>
         }
       </tbody>
-    </table>
+      </table>
+    </div>
   </div>
 </section>

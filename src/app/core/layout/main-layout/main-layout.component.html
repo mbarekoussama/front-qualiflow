@@ -1,14 +1,27 @@
-﻿<div class="min-h-screen bg-[var(--background)] text-slate-900 flex">
-  <aside class="w-64 bg-[#1a5c38] text-white flex flex-col shadow-lg">
-    <div class="px-6 py-6 border-b border-white/10">
+<div class="relative flex min-h-screen overflow-x-hidden bg-[var(--background)] text-slate-900">
+  @if (showMobileNav()) {
+    <button
+      type="button"
+      class="fixed inset-0 z-30 bg-slate-900/40 lg:hidden"
+      aria-label="Fermer le menu"
+      (click)="closeMobileNav()"
+    ></button>
+  }
+
+  <aside
+    class="fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col bg-[#1a5c38] text-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0"
+    [class.-translate-x-full]="!showMobileNav()"
+    [class.translate-x-0]="showMobileNav()"
+  >
+    <div class="border-b border-white/10 px-6 py-6">
       <div class="text-2xl font-semibold tracking-tight">QualiFlow</div>
-      <div class="text-xs uppercase tracking-[0.3em] text-white/70 mt-1">ISO 21001</div>
+      <div class="mt-1 text-xs uppercase tracking-[0.3em] text-white/70">ISO 21001</div>
     </div>
 
-    <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+    <nav class="flex-1 space-y-6 overflow-y-auto px-3 py-4">
       @for (section of navSections(); track section.title) {
         <div>
-          <div class="px-3 text-[11px] uppercase tracking-[0.2em] text-white/60 mb-2">
+          <div class="mb-2 px-3 text-[11px] uppercase tracking-[0.2em] text-white/60">
             {{ section.title }}
           </div>
           <div class="space-y-1">
@@ -16,7 +29,8 @@
               <a
                 [routerLink]="item.route"
                 routerLinkActive="bg-white/15 text-white border-l-4 border-white"
-                class="group flex items-center gap-3 rounded-md px-3 py-2 text-sm text-white/80 hover:bg-white/10 hover:text-white border-l-4 border-transparent transition"
+                class="group flex items-center gap-3 rounded-md border-l-4 border-transparent px-3 py-2 text-sm text-white/80 transition hover:bg-white/10 hover:text-white"
+                (click)="closeMobileNav()"
               >
                 <span class="h-2.5 w-2.5 rounded-full bg-white/70" aria-hidden="true"></span>
                 <span class="flex-1">{{ item.label }}</span>
@@ -32,19 +46,31 @@
       }
     </nav>
 
-    <div class="px-6 py-4 border-t border-white/10">
+    <div class="border-t border-white/10 px-6 py-4">
       <div class="text-xs text-white/70">Version 0.1</div>
     </div>
   </aside>
 
-  <div class="flex-1 flex flex-col">
-    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
-      <div class="flex items-center gap-4">
-        <div>
-          <div class="text-lg font-semibold">Tableau de bord</div>
-          <div class="text-xs text-slate-500">Système de management qualité</div>
+  <div class="flex min-w-0 flex-1 flex-col">
+    <header class="flex min-h-16 items-center justify-between border-b border-slate-200 bg-white px-4 py-2 sm:px-6">
+      <div class="flex min-w-0 items-center gap-3 sm:gap-4">
+        <button
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition hover:bg-slate-200 lg:hidden"
+          aria-label="Ouvrir le menu"
+          (click)="toggleMobileNav()"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"></path>
+          </svg>
+        </button>
+
+        <div class="min-w-0">
+          <div class="truncate text-base font-semibold sm:text-lg">Tableau de bord</div>
+          <div class="hidden text-xs text-slate-500 sm:block">Système de management qualité</div>
         </div>
-        <div class="hidden md:flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-lg">
+
+        <div class="hidden items-center gap-2 rounded-lg bg-slate-100 px-3 py-1.5 xl:flex">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -59,19 +85,16 @@
           <input
             type="text"
             placeholder="Rechercher un document, un processus..."
-            class="bg-transparent text-sm text-slate-600 outline-none w-64"
+            class="w-56 bg-transparent text-sm text-slate-600 outline-none 2xl:w-64"
           />
         </div>
       </div>
 
-      <!-- Close dropdowns on outside click -->
-      <div class="flex items-center gap-3" (click)="closeDropdowns()">
-
-        <!-- ── Notifications ── -->
+      <div class="ml-3 flex items-center gap-2 sm:gap-3" (click)="closeDropdowns()">
         <div class="relative">
           <button
             (click)="toggleNotifications($event)"
-            class="relative h-9 w-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition"
+            class="relative flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
             aria-label="Notifications"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2">
@@ -79,7 +102,7 @@
               <path d="M13.73 21a2 2 0 01-3.46 0"></path>
             </svg>
             @if (unreadCount() > 0) {
-              <span class="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+              <span class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
                 {{ notificationBadge() }}
               </span>
             }
@@ -88,12 +111,11 @@
           @if (showNotifications()) {
             <div
               (click)="$event.stopPropagation()"
-              class="absolute right-0 top-11 z-50 w-96 rounded-xl border border-slate-200 bg-white shadow-xl"
+              class="absolute right-0 top-11 z-50 w-[min(24rem,calc(100vw-1rem))] rounded-xl border border-slate-200 bg-white shadow-xl"
             >
-              <!-- Header -->
               <div class="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                 <div class="flex items-center gap-2">
-                  <span class="font-semibold text-sm">Notifications</span>
+                  <span class="text-sm font-semibold">Notifications</span>
                   @if (unreadCount() > 0) {
                     <span class="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-600">
                       {{ unreadCount() }} non lues
@@ -101,36 +123,33 @@
                   }
                 </div>
                 @if (unreadCount() > 0) {
-                  <button (click)="markAllRead()" class="text-xs text-[#1a5c38] hover:underline font-medium">
+                  <button (click)="markAllRead()" class="text-xs font-medium text-[#1a5c38] hover:underline">
                     Tout marquer lu
                   </button>
                 }
               </div>
 
-              <!-- List -->
-              <ul class="max-h-80 overflow-y-auto divide-y divide-slate-50">
+              <ul class="max-h-80 divide-y divide-slate-50 overflow-y-auto">
                 @for (notif of notifications(); track notif.id) {
                   <li
-                    class="flex gap-3 px-4 py-3 hover:bg-slate-50 transition cursor-pointer"
+                    class="flex cursor-pointer gap-3 px-4 py-3 transition hover:bg-slate-50"
                     [class.bg-[#1a5c38]/5]="!notif.read"
                     [routerLink]="notif.route ?? null"
                     (click)="closeDropdowns()"
                   >
-                    <!-- Icon -->
                     <div class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full" [ngClass]="notifColor(notif.type)">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
                         <path [attr.d]="notifIcon(notif.type)" stroke-linecap="round" stroke-linejoin="round"></path>
                       </svg>
                     </div>
-                    <!-- Content -->
-                    <div class="flex-1 min-w-0">
+                    <div class="min-w-0 flex-1">
                       <div class="flex items-center justify-between gap-2">
-                        <p class="text-xs font-semibold truncate" [class.text-slate-900]="!notif.read" [class.text-slate-500]="notif.read">
+                        <p class="truncate text-xs font-semibold" [class.text-slate-900]="!notif.read" [class.text-slate-500]="notif.read">
                           {{ notif.title }}
                         </p>
                         <button
                           (click)="dismissNotification(notif.id, $event)"
-                          class="shrink-0 text-slate-300 hover:text-slate-500 transition"
+                          class="shrink-0 text-slate-300 transition hover:text-slate-500"
                           title="Supprimer"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -138,17 +157,16 @@
                           </svg>
                         </button>
                       </div>
-                      <p class="text-xs text-slate-500 mt-0.5 line-clamp-2">{{ notif.message }}</p>
-                      <p class="text-[10px] text-slate-400 mt-1">{{ notif.time }}</p>
+                      <p class="mt-0.5 line-clamp-2 text-xs text-slate-500">{{ notif.message }}</p>
+                      <p class="mt-1 text-[10px] text-slate-400">{{ notif.time }}</p>
                     </div>
-                    <!-- Unread dot -->
                     @if (!notif.read) {
                       <span class="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#1a5c38]"></span>
                     }
                   </li>
                 } @empty {
                   <li class="flex flex-col items-center justify-center py-10 text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-8 w-8 mb-2 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="mb-2 h-8 w-8 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5">
                       <path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7"></path>
                       <path d="M13.73 21a2 2 0 01-3.46 0"></path>
                     </svg>
@@ -160,21 +178,20 @@
           }
         </div>
 
-        <!-- ── Profile ── -->
         <div class="relative">
           <button
             (click)="toggleProfile($event)"
-            class="flex items-center gap-2.5 rounded-lg px-2 py-1.5 hover:bg-slate-100 transition"
+            class="flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition hover:bg-slate-100"
           >
             <div
-              class="h-8 w-8 rounded-full text-white flex items-center justify-center text-sm font-semibold"
+              class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-semibold text-white"
               [style.backgroundColor]="currentUser()?.couleur"
             >
               {{ currentUser()?.initiales }}
             </div>
-            <div class="text-left hidden sm:block">
+            <div class="hidden text-left sm:block">
               <div class="text-sm font-semibold leading-tight">{{ userLabel() }}</div>
-              <div class="text-[11px] text-slate-500 leading-tight">{{ roleLabel() }}</div>
+              <div class="text-[11px] leading-tight text-slate-500">{{ roleLabel() }}</div>
             </div>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -184,32 +201,30 @@
           @if (showProfile()) {
             <div
               (click)="$event.stopPropagation()"
-              class="absolute right-0 top-11 z-50 w-64 rounded-xl border border-slate-200 bg-white shadow-xl"
+              class="absolute right-0 top-11 z-50 w-[min(16rem,calc(100vw-1rem))] rounded-xl border border-slate-200 bg-white shadow-xl"
             >
-              <!-- User info -->
-              <div class="flex items-center gap-3 px-4 py-4 border-b border-slate-100">
+              <div class="flex items-center gap-3 border-b border-slate-100 px-4 py-4">
                 <div
-                  class="h-10 w-10 rounded-full text-white flex items-center justify-center text-sm font-bold"
+                  class="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white"
                   [style.backgroundColor]="currentUser()?.couleur"
                 >
                   {{ currentUser()?.initiales }}
                 </div>
-                <div>
-                  <div class="text-sm font-semibold">{{ userLabel() }}</div>
-                  <div class="text-xs text-slate-500">{{ currentUser()?.email }}</div>
+                <div class="min-w-0">
+                  <div class="truncate text-sm font-semibold">{{ userLabel() }}</div>
+                  <div class="truncate text-xs text-slate-500">{{ currentUser()?.email }}</div>
                   <span class="mt-1 inline-block rounded-full bg-[#1a5c38]/10 px-2 py-0.5 text-[10px] font-semibold text-[#1a5c38]">
                     {{ roleLabel() }}
                   </span>
                 </div>
               </div>
 
-              <!-- Menu items -->
               <ul class="py-1.5">
                 <li>
                   <a
                     routerLink="/profil"
                     (click)="closeDropdowns()"
-                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition"
+                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" stroke-linecap="round"></path>
@@ -222,7 +237,7 @@
                   <a
                     routerLink="/parametres"
                     (click)="closeDropdowns()"
-                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition"
+                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2">
                       <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" stroke-linecap="round"></path>
@@ -235,7 +250,7 @@
                   <a
                     href="#"
                     (click)="closeDropdowns()"
-                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition"
+                    class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 transition hover:bg-slate-50"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2">
                       <circle cx="12" cy="12" r="10"></circle>
@@ -246,11 +261,10 @@
                 </li>
               </ul>
 
-              <!-- Logout -->
               <div class="border-t border-slate-100 p-1.5">
                 <button
                   (click)="logout()"
-                  class="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition"
+                  class="flex w-full items-center gap-3 rounded-lg px-4 py-2.5 text-sm text-red-600 transition hover:bg-red-50"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke-linecap="round"></path>
@@ -263,11 +277,10 @@
             </div>
           }
         </div>
-
       </div>
     </header>
 
-    <main class="flex-1 p-6 bg-[var(--background)]">
+    <main class="flex-1 bg-[var(--background)] p-4 sm:p-6">
       <router-outlet />
     </main>
   </div>

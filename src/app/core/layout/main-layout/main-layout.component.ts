@@ -93,6 +93,7 @@ export class MainLayoutComponent {
 
   readonly showNotifications = signal(false);
   readonly showProfile = signal(false);
+  readonly showMobileNav = signal(false);
 
   readonly navSections = signal<NavSection[]>([
     {
@@ -135,6 +136,14 @@ export class MainLayoutComponent {
     event.stopPropagation();
     this.showProfile.update((v) => !v);
     this.showNotifications.set(false);
+  }
+
+  toggleMobileNav(): void {
+    this.showMobileNav.update((v) => !v);
+  }
+
+  closeMobileNav(): void {
+    this.showMobileNav.set(false);
   }
 
   closeDropdowns(): void {

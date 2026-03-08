@@ -4,10 +4,10 @@
       <h1 class="text-2xl font-semibold">Processus</h1>
       <p class="text-sm text-slate-500">{{ visibleCount() }} processus affichés</p>
     </div>
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex w-full flex-wrap items-center gap-2 sm:w-auto">
         <select
-          class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600"
+          class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
           [value]="typeFilter()"
           (change)="updateTypeFilter($any($event.target).value)"
         >
@@ -18,7 +18,7 @@
           <option value="Mesure">Mesure</option>
         </select>
         <select
-          class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600"
+          class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
           [value]="statusFilter()"
           (change)="updateStatusFilter($any($event.target).value)"
         >
