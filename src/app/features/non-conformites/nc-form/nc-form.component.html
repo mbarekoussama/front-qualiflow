@@ -1,0 +1,97 @@
+<section class="space-y-6 max-w-2xl">
+  <div>
+    <h1 class="text-2xl font-semibold">Déclarer une non-conformité</h1>
+    <p class="text-sm text-slate-500">Enregistrer un écart par rapport aux exigences ISO 21001</p>
+  </div>
+
+  <form [formGroup]="form" class="space-y-6">
+    <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
+      <div class="px-5 py-4 border-b border-slate-100">
+        <h2 class="text-lg font-semibold">Identification</h2>
+      </div>
+      <div class="p-5 space-y-4">
+        <div>
+          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Description *</label>
+          <textarea formControlName="description" rows="3"
+            placeholder="Décrire l'écart constaté avec précision..."
+            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
+          </textarea>
+          @if (formSubmitted() && form.controls.description.invalid) {
+            <p class="mt-1 text-xs text-red-600">La description est requise (10 caractères min.).</p>
+          }
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Processus concerné *</label>
+            <select formControlName="processus"
+              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
+              @for (opt of processusOptions(); track opt) {
+                <option [value]="opt">{{ opt }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Source *</label>
+            <select formControlName="source"
+              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
+              @for (src of sources; track src) {
+                <option [value]="src">{{ src }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Priorité *</label>
+            <select formControlName="priorite"
+              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
+              @for (p of priorites; track p) {
+                <option [value]="p">{{ p }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Responsable *</label>
+            <select formControlName="responsableId"
+              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
+              @for (r of responsables(); track r.id) {
+                <option [value]="r.id">{{ r.prenom }} {{ r.nom }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Date de détection *</label>
+            <input formControlName="dateDetection" type="date"
+              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Date d'échéance *</label>
+            <input formControlName="dateEcheance" type="date"
+              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" />
+            @if (formSubmitted() && form.controls.dateEcheance.invalid) {
+              <p class="mt-1 text-xs text-red-600">La date d'échéance est requise.</p>
+            }
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Cause racine (optionnel)</label>
+          <textarea formControlName="causeRacine" rows="2"
+            placeholder="Identifier la cause racine de l'écart"
+            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
+          </textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-3 md:flex-row md:justify-end">
+      <a routerLink="/non-conformites"
+        class="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 text-center">
+        Annuler
+      </a>
+      <button type="button" (click)="submit()"
+        class="rounded-md bg-[#1a5c38] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a4f]">
+        Déclarer la NC
+      </button>
+    </div>
+  </form>
+</section>

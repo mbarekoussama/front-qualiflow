@@ -1,0 +1,173 @@
+﻿<section class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold">Dashboard</h1>
+      <p class="text-sm text-slate-500">Synthèse du système qualité · Mise à jour {{ lastUpdated() | date: 'short' }}</p>
+    </div>
+  </div>
+
+  <div class="grid gap-4 lg:grid-cols-4 md:grid-cols-2">
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+      <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Total processus</div>
+      <div class="mt-2 text-2xl font-semibold">{{ totalProcessus() }}</div>
+      <div class="text-xs text-slate-500 mt-1">Actifs</div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+      <div class="text-xs uppercase tracking-[0.2em] text-slate-400">NC ouvertes</div>
+      <div class="mt-2 text-2xl font-semibold text-red-600">{{ ncOuvertes() }}</div>
+      <div class="text-xs text-slate-500 mt-1">À traiter</div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+      <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Documents actifs</div>
+      <div class="mt-2 text-2xl font-semibold">{{ documentsActifs() }}</div>
+      <div class="text-xs text-slate-500 mt-1">GED</div>
+    </div>
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-4">
+      <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Conformité globale</div>
+      <div class="mt-2 text-2xl font-semibold text-emerald-600">{{ tauxConformiteGlobal() }}%</div>
+      <div class="text-xs text-slate-500 mt-1">Moyenne</div>
+    </div>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-lg font-semibold">Processus clés</h2>
+          <p class="text-xs text-slate-500">Vue rapide sur les processus critiques</p>
+        </div>
+        <a class="text-sm text-emerald-700 hover:text-emerald-900" routerLink="/processus">Voir tout →</a>
+      </div>
+      <div class="p-4">
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-slate-400">
+            <tr class="text-left">
+              <th class="py-2">Processus</th>
+              <th class="py-2">Type</th>
+              <th class="py-2">Conformité</th>
+              <th class="py-2">Statut</th>
+              <th class="py-2">Pilote</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (processus of processus(); track processus.id) {
+              <tr class="text-slate-600">
+                <td class="py-3">
+                  <div class="font-semibold text-slate-800">{{ processus.intitule }}</div>
+                  <div class="text-xs text-slate-400">{{ processus.code }}</div>
+                </td>
+                <td class="py-3">
+                  <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{{ processus.type }}</span>
+                </td>
+                <td class="py-3">
+                  <div class="flex items-center gap-2">
+                    <div class="h-2 w-24 rounded-full bg-slate-100">
+                      <div
+                        class="h-2 rounded-full"
+                        [ngClass]="progressColor(processus.tauxConformite)"
+                        [style.width.%]="processus.tauxConformite"
+                      ></div>
+                    </div>
+                    <span class="text-xs text-slate-500">{{ processus.tauxConformite }}%</span>
+                  </div>
+                </td>
+                <td class="py-3">
+                  <span
+                    class="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs"
+                    [ngClass]="statusClass(processus.statut)"
+                  >
+                    <span class="h-1.5 w-1.5 rounded-full bg-current"></span>
+                    {{ processus.statut }}
+                  </span>
+                </td>
+                <td class="py-3">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="h-8 w-8 rounded-full text-white flex items-center justify-center text-xs font-semibold"
+                      [style.backgroundColor]="processus.pilote.couleur"
+                    >
+                      {{ processus.pilote.initiales }}
+                    </span>
+                    <div>
+                      <div class="text-sm text-slate-700">{{ processus.pilote.prenom }} {{ processus.pilote.nom }}</div>
+                      <div class="text-xs text-slate-400">{{ processus.pilote.role }}</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-lg font-semibold">Non-Conformités ouvertes</h2>
+          <p class="text-xs text-slate-500">Prioriser les actions correctives</p>
+        </div>
+        <a class="text-sm text-emerald-700 hover:text-emerald-900" routerLink="/non-conformites">Voir tout →</a>
+      </div>
+      <div class="p-4">
+        <table class="w-full text-sm">
+          <thead class="text-xs uppercase text-slate-400">
+            <tr class="text-left">
+              <th class="py-2">Référence</th>
+              <th class="py-2">Description</th>
+              <th class="py-2">Processus</th>
+              <th class="py-2">Priorité</th>
+              <th class="py-2">Avancement</th>
+              <th class="py-2">Responsable</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (nc of nonConformites(); track nc.id) {
+              <tr class="text-slate-600">
+                <td class="py-3 font-semibold text-slate-700">{{ nc.id }}</td>
+                <td class="py-3">
+                  <div class="text-slate-700">{{ nc.description }}</div>
+                  <div class="text-xs text-slate-400">Détectée le {{ nc.dateDetection | date: 'shortDate' }}</div>
+                </td>
+                <td class="py-3">
+                  <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{{ nc.processus }}</span>
+                </td>
+                <td class="py-3">
+                  <span class="rounded-full px-3 py-1 text-xs font-semibold" [ngClass]="priorityClass(nc.priorite)">
+                    {{ nc.priorite }}
+                  </span>
+                </td>
+                <td class="py-3">
+                  <div class="flex items-center gap-2">
+                    <div class="h-2 w-24 rounded-full bg-slate-100">
+                      <div
+                        class="h-2 rounded-full"
+                        [ngClass]="progressColor(nc.avancement)"
+                        [style.width.%]="nc.avancement"
+                      ></div>
+                    </div>
+                    <span class="text-xs text-slate-500">{{ nc.avancement }}%</span>
+                  </div>
+                </td>
+                <td class="py-3">
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="h-8 w-8 rounded-full text-white flex items-center justify-center text-xs font-semibold"
+                      [style.backgroundColor]="nc.responsable.couleur"
+                    >
+                      {{ nc.responsable.initiales }}
+                    </span>
+                    <div>
+                      <div class="text-sm text-slate-700">{{ nc.responsable.prenom }} {{ nc.responsable.nom }}</div>
+                      <div class="text-xs text-slate-400">{{ nc.responsable.role }}</div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>

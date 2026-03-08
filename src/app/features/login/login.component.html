@@ -1,0 +1,116 @@
+<div class="min-h-screen flex items-center justify-center bg-[#f3f4f6] px-4">
+  <div class="w-full max-w-md">
+
+    <!-- Logo / Brand -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-[#1a5c38] text-white text-2xl font-bold mb-4">
+        QF
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900">QualiFlow</h1>
+      <p class="text-sm text-slate-500 mt-1">Système de management qualité ISO 21001</p>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
+      <h2 class="text-lg font-semibold text-slate-800 mb-6">Connexion</h2>
+
+      @if (errorMessage()) {
+        <div class="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex items-center gap-2">
+          <span>✕</span>
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+        <!-- Email -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 mb-2">
+            Adresse email
+          </label>
+          <input
+            formControlName="email"
+            type="email"
+            autocomplete="email"
+            placeholder="nom@organisation.app"
+            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#1a5c38] focus:ring-2 focus:ring-[#1a5c38]/20 transition"
+          />
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <p class="mt-1 text-xs text-red-600">Email invalide.</p>
+          }
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 mb-2">
+            Mot de passe
+          </label>
+          <div class="relative">
+            <input
+              formControlName="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 pr-10 text-sm text-slate-800 outline-none focus:border-[#1a5c38] focus:ring-2 focus:ring-[#1a5c38]/20 transition"
+            />
+            <button
+              type="button"
+              (click)="togglePassword()"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              @if (showPassword()) {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                  <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-4 w-4">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              }
+            </button>
+          </div>
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <p class="mt-1 text-xs text-red-600">Mot de passe requis (6 caractères min.).</p>
+          }
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          [disabled]="isLoading()"
+          class="w-full rounded-lg bg-[#1a5c38] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#2d7a4f] disabled:opacity-60 disabled:cursor-not-allowed transition mt-2"
+        >
+          @if (isLoading()) {
+            <span class="inline-flex items-center justify-center gap-2">
+              <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              Connexion...
+            </span>
+          } @else {
+            Se connecter
+          }
+        </button>
+      </form>
+
+      <!-- Demo accounts -->
+      <div class="mt-6 border-t border-slate-100 pt-5">
+        <p class="text-xs text-slate-400 mb-3 font-medium uppercase tracking-[0.15em]">Comptes de démo</p>
+        <div class="space-y-2">
+          @for (account of demoAccounts; track account.email) {
+            <button
+              type="button"
+              (click)="fillDemo(account.email)"
+              class="w-full text-left rounded-lg border border-slate-200 px-3 py-2 text-xs hover:bg-slate-50 transition"
+            >
+              <span class="font-semibold text-slate-700">{{ account.label }}</span>
+              <span class="text-slate-400 ml-2">{{ account.email }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

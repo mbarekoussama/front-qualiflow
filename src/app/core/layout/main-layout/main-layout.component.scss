@@ -1,0 +1,17 @@
+﻿:host {
+  display: block;
+  min-height: 100vh;
+}
+
+nav {
+  scrollbar-width: thin;
+}
+
+nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+nav::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+}

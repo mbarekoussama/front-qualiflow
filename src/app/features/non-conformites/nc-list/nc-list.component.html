@@ -1,0 +1,135 @@
+<section class="space-y-6">
+  <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold">Non-Conformités</h1>
+      <p class="text-sm text-slate-500">Suivi des écarts et actions correctives</p>
+    </div>
+    <a
+      routerLink="/non-conformites/nouvelle"
+      class="rounded-md bg-[#1a5c38] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a4f]"
+    >
+      + Déclarer une NC
+    </a>
+  </div>
+
+  <!-- KPI summary -->
+  <div class="grid gap-4 md:grid-cols-3">
+    <div class="bg-white rounded-lg border border-red-200 shadow-sm p-4">
+      <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Ouvertes</div>
+      <div class="mt-2 text-2xl font-semibold text-red-600">{{ countOuvertes() }}</div>
+    </div>
+    <div class="bg-white rounded-lg border border-amber-200 shadow-sm p-4">
+      <div class="text-xs uppercase tracking-[0.2em] text-slate-400">En cours</div>
+      <div class="mt-2 text-2xl font-semibold text-amber-600">{{ countEnCours() }}</div>
+    </div>
+    <div class="bg-white rounded-lg border border-green-200 shadow-sm p-4">
+      <div class="text-xs uppercase tracking-[0.2em] text-slate-400">Clôturées</div>
+      <div class="mt-2 text-2xl font-semibold text-green-700">{{ countCloturees() }}</div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="flex flex-wrap items-center gap-3">
+    <select
+      class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600"
+      [value]="processusFilter()"
+      (change)="updateProcessusFilter($any($event.target).value)"
+    >
+      @for (opt of processusOptions(); track opt) {
+        <option [value]="opt">{{ opt === 'Tous' ? 'Tous les processus' : opt }}</option>
+      }
+    </select>
+    <select
+      class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600"
+      [value]="prioriteFilter()"
+      (change)="updatePrioriteFilter($any($event.target).value)"
+    >
+      <option value="Tous">Toutes priorités</option>
+      <option value="Critique">Critique</option>
+      <option value="Élevée">Élevée</option>
+      <option value="Moyenne">Moyenne</option>
+      <option value="Faible">Faible</option>
+    </select>
+    <select
+      class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600"
+      [value]="statutFilter()"
+      (change)="updateStatutFilter($any($event.target).value)"
+    >
+      <option value="Tous">Tous les statuts</option>
+      <option value="Ouverte">Ouverte</option>
+      <option value="En cours">En cours</option>
+      <option value="Clôturée">Clôturée</option>
+      <option value="Rejetée">Rejetée</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 border-b border-slate-200">
+        <tr class="text-left text-xs uppercase tracking-[0.15em] text-slate-500">
+          <th class="px-5 py-3">Réf.</th>
+          <th class="px-5 py-3">Description</th>
+          <th class="px-5 py-3">Processus</th>
+          <th class="px-5 py-3">Source</th>
+          <th class="px-5 py-3">Priorité</th>
+          <th class="px-5 py-3">Avancement</th>
+          <th class="px-5 py-3">Statut</th>
+          <th class="px-5 py-3">Responsable</th>
+          <th class="px-5 py-3">Échéance</th>
+          <th class="px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        @for (nc of filteredNcs(); track nc.id) {
+          <tr class="hover:bg-slate-50 transition text-slate-700">
+            <td class="px-5 py-3 font-mono text-xs font-semibold text-slate-600">{{ nc.id }}</td>
+            <td class="px-5 py-3">
+              <div class="text-slate-800 font-medium max-w-xs">{{ nc.description }}</div>
+              <div class="text-xs text-slate-400 mt-0.5">Détecté le {{ nc.dateDetection | date: 'dd/MM/yyyy' }}</div>
+            </td>
+            <td class="px-5 py-3">
+              <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{{ nc.processus }}</span>
+            </td>
+            <td class="px-5 py-3 text-xs text-slate-500">{{ nc.source }}</td>
+            <td class="px-5 py-3">
+              <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="priorityClass(nc.priorite)">
+                {{ nc.priorite }}
+              </span>
+            </td>
+            <td class="px-5 py-3 w-40">
+              <app-progress-bar [value]="nc.avancement" />
+            </td>
+            <td class="px-5 py-3">
+              <app-status-badge [status]="nc.statut" />
+            </td>
+            <td class="px-5 py-3">
+              <div class="flex items-center gap-2">
+                <span class="h-7 w-7 rounded-full text-white flex items-center justify-center text-[11px] font-semibold shrink-0"
+                  [style.backgroundColor]="nc.responsable.couleur">
+                  {{ nc.responsable.initiales }}
+                </span>
+              </div>
+            </td>
+            <td class="px-5 py-3 text-xs" [class.text-red-600]="nc.dateEcheance < today">
+              {{ nc.dateEcheance | date: 'dd/MM/yyyy' }}
+            </td>
+            <td class="px-5 py-3">
+              <a [routerLink]="['/non-conformites', nc.id]"
+                class="text-xs text-emerald-700 hover:text-emerald-900 font-semibold">
+                Détail →
+              </a>
+            </td>
+          </tr>
+        }
+        @empty {
+          <tr>
+            <td colspan="10" class="px-5 py-12 text-center text-sm text-slate-400">
+              Aucune non-conformité trouvée.
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
