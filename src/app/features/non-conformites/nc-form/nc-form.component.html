@@ -4,6 +4,10 @@
     <p class="text-sm text-slate-500">Enregistrer un écart par rapport aux exigences ISO 21001</p>
   </div>
 
+  @if (error()) {
+    <div class="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{{ error() }}</div>
+  }
+
   <form [formGroup]="form" class="space-y-6">
     <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
       <div class="px-5 py-4 border-b border-slate-100">
@@ -23,11 +27,27 @@
 
         <div class="grid gap-4 md:grid-cols-2">
           <div>
+            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Nature *</label>
+            <input formControlName="nature" type="text" placeholder="ex. Manquement documentaire"
+              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" />
+            @if (formSubmitted() && form.controls.nature.invalid) {
+              <p class="mt-1 text-xs text-red-600">La nature est requise.</p>
+            }
+          </div>
+          <div>
+            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Type *</label>
+            <input formControlName="type" type="text" placeholder="ex. Documentaire, Procédural..."
+              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" />
+            @if (formSubmitted() && form.controls.type.invalid) {
+              <p class="mt-1 text-xs text-red-600">Le type est requis.</p>
+            }
+          </div>
+          <div>
             <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Processus concerné *</label>
-            <select formControlName="processus"
+            <select formControlName="processusId"
               class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
-              @for (opt of processusOptions(); track opt) {
-                <option [value]="opt">{{ opt }}</option>
+              @for (p of processusOptions(); track p.id) {
+                <option [value]="p.id">{{ p.code }} – {{ p.nom }}</option>
               }
             </select>
           </div>
@@ -35,33 +55,31 @@
             <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Source *</label>
             <select formControlName="source"
               class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
-              @for (src of sources; track src) {
-                <option [value]="src">{{ src }}</option>
+              @for (src of sources; track src.value) {
+                <option [value]="src.value">{{ src.label }}</option>
               }
             </select>
           </div>
           <div>
-            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Priorité *</label>
-            <select formControlName="priorite"
+            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Gravité *</label>
+            <select formControlName="gravite"
               class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
-              @for (p of priorites; track p) {
-                <option [value]="p">{{ p }}</option>
+              @for (g of gravites; track g.value) {
+                <option [value]="g.value">{{ g.label }}</option>
               }
             </select>
           </div>
           <div>
-            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Responsable *</label>
-            <select formControlName="responsableId"
+            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Responsable traitement *</label>
+            <select formControlName="responsableTraitementId"
               class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
               @for (r of responsables(); track r.id) {
                 <option [value]="r.id">{{ r.prenom }} {{ r.nom }}</option>
               }
             </select>
-          </div>
-          <div>
-            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Date de détection *</label>
-            <input formControlName="dateDetection" type="date"
-              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" />
+            @if (formSubmitted() && form.controls.responsableTraitementId.invalid) {
+              <p class="mt-1 text-xs text-red-600">Le responsable est requis.</p>
+            }
           </div>
           <div>
             <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Date d'échéance *</label>
@@ -72,14 +90,6 @@
             }
           </div>
         </div>
-
-        <div>
-          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Cause racine (optionnel)</label>
-          <textarea formControlName="causeRacine" rows="2"
-            placeholder="Identifier la cause racine de l'écart"
-            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
-          </textarea>
-        </div>
       </div>
     </div>
 
@@ -88,9 +98,9 @@
         class="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 text-center">
         Annuler
       </a>
-      <button type="button" (click)="submit()"
-        class="rounded-md bg-[#1a5c38] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a4f]">
-        Déclarer la NC
+      <button type="button" (click)="submit()" [disabled]="loading()"
+        class="rounded-md bg-[#1a5c38] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a4f] disabled:opacity-50">
+        @if (loading()) { Envoi en cours… } @else { Déclarer la NC }
       </button>
     </div>
   </form>

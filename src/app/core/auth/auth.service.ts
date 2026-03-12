@@ -1,92 +1,53 @@
 import { Injectable, PLATFORM_ID, inject, signal, computed } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, of, throwError } from 'rxjs';
-import { delay, tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
 
-import { AuthUser, LoginCredentials, LoginResponse } from './auth.model';
+import { AuthUser, LoginCredentials, LoginResponse, RegisterCredentials } from './auth.model';
 import { RoleUtilisateur } from '../../shared/models/utilisateur.model';
-
-const MOCK_USERS: (AuthUser & { password: string })[] = [
-  {
-    id: 'u-01',
-    nom: 'Mansouri',
-    prenom: 'Amira',
-    initiales: 'AM',
-    email: 'a.mansouri@qualiflow.app',
-    role: 'Responsable Qualité',
-    couleur: '#1a5c38',
-    password: 'qualiflow2026',
-    token: 'mock-token-admin'
-  },
-  {
-    id: 'u-02',
-    nom: 'Mrad',
-    prenom: 'Kais',
-    initiales: 'KM',
-    email: 'k.mrad@qualiflow.app',
-    role: 'Pilote',
-    couleur: '#2d7a4f',
-    password: 'qualiflow2026',
-    token: 'mock-token-pilote'
-  },
-  {
-    id: 'u-03',
-    nom: 'Ben Ali',
-    prenom: 'Sana',
-    initiales: 'SB',
-    email: 's.benali@qualiflow.app',
-    role: 'Auditeur',
-    couleur: '#0f766e',
-    password: 'qualiflow2026',
-    token: 'mock-token-auditeur'
-  },
-  {
-    id: 'u-04',
-    nom: 'Haddad',
-    prenom: 'Rami',
-    initiales: 'RH',
-    email: 'r.haddad@qualiflow.app',
-    role: 'Pilote',
-    couleur: '#475569',
-    password: 'qualiflow2026',
-    token: 'mock-token-pilote2'
-  }
-];
+import { environment } from '../../../environments/environment';
 
 const TOKEN_KEY = 'qf_token';
-const USER_KEY = 'qf_user';
+const USER_KEY  = 'qf_user';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly router = inject(Router);
+  private readonly router     = inject(Router);
+  private readonly http       = inject(HttpClient);
 
   private readonly _currentUser = signal<AuthUser | null>(this.loadUserFromStorage());
-  readonly currentUser = this._currentUser.asReadonly();
-  readonly isAuthenticated = computed(() => this._currentUser() !== null);
-  readonly userRole = computed(() => this._currentUser()?.role ?? null);
+  readonly currentUser      = this._currentUser.asReadonly();
+  readonly isAuthenticated  = computed(() => this._currentUser() !== null);
+  readonly userRole         = computed(() => this._currentUser()?.role ?? null);
+  readonly organisationId   = computed(() => this._currentUser()?.organisationId ?? null);
 
   login(credentials: LoginCredentials): Observable<LoginResponse> {
-    const found = MOCK_USERS.find(
-      (u) => u.email === credentials.email && u.password === credentials.password
-    );
+    return this.http
+      .post<LoginResponse>(`${environment.apiUrl}/auth/login`, credentials)
+      .pipe(
+        tap((res) => this.persistSession(res.user, res.token)),
+        catchError((err) => {
+          const msg: string =
+            err?.error?.message ?? err?.message ?? 'Email ou mot de passe incorrect';
+          return throwError(() => new Error(msg));
+        })
+      );
+  }
 
-    if (!found) {
-      return throwError(() => new Error('Email ou mot de passe incorrect'));
-    }
-
-    const { password: _pw, ...user } = found;
-    const response: LoginResponse = {
-      user,
-      token: user.token,
-      expiresIn: 86400
-    };
-
-    return of(response).pipe(
-      delay(600),
-      tap((res) => this.persistSession(res.user, res.token))
-    );
+  register(credentials: RegisterCredentials): Observable<LoginResponse> {
+    return this.http
+      .post<LoginResponse>(`${environment.apiUrl}/auth/register`, credentials)
+      .pipe(
+        tap((res) => this.persistSession(res.user, res.token)),
+        catchError((err) => {
+          const msg: string =
+            err?.error?.message ?? err?.message ?? 'Erreur lors de la création du compte';
+          return throwError(() => new Error(msg));
+        })
+      );
   }
 
   logout(): void {

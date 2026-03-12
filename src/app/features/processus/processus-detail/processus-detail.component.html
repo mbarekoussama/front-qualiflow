@@ -1,0 +1,346 @@
+@if (loading()) {
+  <div class="flex items-center justify-center py-16">
+    <div class="h-8 w-8 animate-spin rounded-full border-2 border-[#1B5E20] border-t-transparent"></div>
+    <span class="ml-3 text-sm text-slate-500">Chargement…</span>
+  </div>
+} @else if (error()) {
+  <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+    {{ error() }}
+  </div>
+} @else if (processus()) {
+
+  <section class="space-y-5">
+
+    <!-- ── Page header ───────────────────────────────────── -->
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <a routerLink="/processus"
+          class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:bg-slate-50">
+          ←
+        </a>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="rounded-full bg-[#1B5E20]/10 px-2.5 py-0.5 text-xs font-semibold text-[#1B5E20]">
+              {{ processus()!.code }}
+            </span>
+            <span class="rounded-full px-2.5 py-0.5 text-xs font-medium {{ typeBadgeClass(processus()!.type) }}">
+              {{ processus()!.type }}
+            </span>
+            <span class="rounded-full px-2.5 py-0.5 text-xs font-medium
+              {{ processus()!.statut === 'ACTIF' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500' }}">
+              {{ processus()!.statut }}
+            </span>
+          </div>
+          <h1 class="mt-1 text-xl font-semibold text-slate-800">{{ processus()!.nom }}</h1>
+        </div>
+      </div>
+      <button type="button" (click)="editer()"
+        class="rounded-md bg-[#1B5E20] px-4 py-2 text-sm font-semibold text-white hover:bg-[#2d7a4f] transition-colors">
+        ✏ Modifier
+      </button>
+    </div>
+
+    <!-- ── Stats row ─────────────────────────────────────── -->
+    <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+      <div class="rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm">
+        <div class="text-2xl font-bold text-[#1B5E20]">{{ processus()!.nombreProcedures }}</div>
+        <div class="text-xs text-slate-500">Procédures</div>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm">
+        <div class="text-2xl font-bold text-blue-600">{{ processus()!.nombreDocuments }}</div>
+        <div class="text-xs text-slate-500">Documents</div>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm">
+        <div class="text-2xl font-bold text-purple-600">{{ processus()!.nombreIndicateurs }}</div>
+        <div class="text-xs text-slate-500">Indicateurs</div>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm">
+        <div class="text-2xl font-bold text-orange-600">{{ processus()!.nombrePointsControle }}</div>
+        <div class="text-xs text-slate-500">Points contrôle</div>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-3 text-center shadow-sm">
+        <div class="text-2xl font-bold {{ processus()!.nombreNC > 0 ? 'text-red-600' : 'text-slate-400' }}">
+          {{ processus()!.nombreNC }}
+        </div>
+        <div class="text-xs text-slate-500">NC ouvertes</div>
+      </div>
+    </div>
+
+    <!-- ── Tabs ───────────────────────────────────────────── -->
+    <div class="border-b border-slate-200">
+      <nav class="-mb-px flex gap-1 overflow-x-auto">
+        @for (tab of tabs; track tab.id) {
+          <button type="button"
+            class="shrink-0 px-4 py-2.5 text-sm font-medium transition-colors border-b-2"
+            [class]="activeTab() === tab.id
+              ? 'border-[#1B5E20] text-[#1B5E20]'
+              : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300'"
+            (click)="setTab(tab.id)">
+            {{ tab.label }}
+          </button>
+        }
+      </nav>
+    </div>
+
+    <!-- ── Tab content ────────────────────────────────────── -->
+
+    @switch (activeTab()) {
+
+      @case ('infos') {
+        <div class="grid gap-5 md:grid-cols-2">
+
+          <!-- Pilote card -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 class="mb-3 text-sm font-semibold text-slate-700">Pilote</h3>
+            <div class="flex items-center gap-3">
+              <span class="inline-flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white"
+                [style.background-color]="piloteColor(processus()!.pilote.initiales)">
+                {{ processus()!.pilote.initiales }}
+              </span>
+              <div>
+                <div class="font-medium text-slate-800">
+                  {{ processus()!.pilote.prenom }} {{ processus()!.pilote.nom }}
+                </div>
+                @if (processus()!.pilote.fonction) {
+                  <div class="text-xs text-slate-500">{{ processus()!.pilote.fonction }}</div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Acteurs -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 class="mb-3 text-sm font-semibold text-slate-700">Acteurs ({{ processus()!.acteurs.length }})</h3>
+            <div class="space-y-2">
+              @for (acteur of processus()!.acteurs; track acteur.utilisateurId) {
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-slate-700">{{ acteur.nomComplet }}</span>
+                  <span class="rounded-full px-2.5 py-0.5 text-xs font-medium {{ acteurBadgeClass(acteur.typeActeur) }}">
+                    {{ acteur.typeActeur }}
+                  </span>
+                </div>
+              }
+              @if (processus()!.acteurs.length === 0) {
+                <p class="text-xs text-slate-400">Aucun acteur renseigné</p>
+              }
+            </div>
+          </div>
+
+          <!-- Finalités -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 class="mb-3 text-sm font-semibold text-slate-700">Finalités</h3>
+            <div class="flex flex-wrap gap-1.5">
+              @for (f of processus()!.finalites; track f) {
+                <span class="rounded-md bg-[#1B5E20]/10 px-2.5 py-0.5 text-xs text-[#1B5E20]">{{ f }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Objectifs -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 class="mb-3 text-sm font-semibold text-slate-700">Objectifs</h3>
+            <div class="flex flex-wrap gap-1.5">
+              @for (o of processus()!.objectifs; track o) {
+                <span class="rounded-md bg-blue-50 px-2.5 py-0.5 text-xs text-blue-700">{{ o }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Périmètres -->
+          @if (processus()!.perimetres.length > 0) {
+            <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+              <h3 class="mb-3 text-sm font-semibold text-slate-700">Périmètres</h3>
+              <div class="flex flex-wrap gap-1.5">
+                @for (p of processus()!.perimetres; track p) {
+                  <span class="rounded-md bg-slate-100 px-2.5 py-0.5 text-xs text-slate-600">{{ p }}</span>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Fournisseurs / Clients -->
+          <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 class="mb-3 text-sm font-semibold text-slate-700">Fournisseurs & Clients</h3>
+            <div class="space-y-2">
+              <div>
+                <div class="text-xs text-slate-400 mb-1">Fournisseurs</div>
+                <div class="flex flex-wrap gap-1">
+                  @for (f of processus()!.fournisseurs; track f) {
+                    <span class="rounded-md bg-orange-50 px-2 py-0.5 text-xs text-orange-700">{{ f }}</span>
+                  }
+                </div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-400 mb-1">Clients</div>
+                <div class="flex flex-wrap gap-1">
+                  @for (c of processus()!.clients; track c) {
+                    <span class="rounded-md bg-purple-50 px-2 py-0.5 text-xs text-purple-700">{{ c }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Données entrée / sortie -->
+          <div class="col-span-full rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 class="mb-3 text-sm font-semibold text-slate-700">Données entrée / sortie</h3>
+            <div class="grid gap-4 md:grid-cols-2">
+              <div>
+                <div class="text-xs text-slate-400 mb-2">Données d'entrée</div>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (d of processus()!.donneesEntree; track d) {
+                    <span class="rounded-md bg-teal-50 px-2.5 py-0.5 text-xs text-teal-700">{{ d }}</span>
+                  }
+                </div>
+              </div>
+              <div>
+                <div class="text-xs text-slate-400 mb-2">Données de sortie</div>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (d of processus()!.donneesSortie; track d) {
+                    <span class="rounded-md bg-indigo-50 px-2.5 py-0.5 text-xs text-indigo-700">{{ d }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      }
+
+      @case ('procedures') {
+        <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+            <h3 class="text-sm font-semibold text-slate-700">Procédures rattachées</h3>
+            <button type="button"
+              class="rounded-md bg-[#1B5E20] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#2d7a4f]">
+              + Nouvelle procédure
+            </button>
+          </div>
+          <div class="p-5">
+            <p class="text-sm text-slate-400">Aucune procédure — connectez l'API pour afficher les données.</p>
+          </div>
+        </div>
+      }
+
+      @case ('indicateurs') {
+        <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+            <h3 class="text-sm font-semibold text-slate-700">Indicateurs</h3>
+            <button type="button"
+              class="rounded-md bg-[#1B5E20] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#2d7a4f]">
+              + Nouvel indicateur
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="border-b border-slate-100 bg-slate-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Code</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Nom</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Unité</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Cible</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Seuil</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Fréquence</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="7" class="px-4 py-8 text-center text-xs text-slate-400">Aucun indicateur</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      @case ('pointsControle') {
+        <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+            <h3 class="text-sm font-semibold text-slate-700">Points de contrôle</h3>
+            <button type="button"
+              class="rounded-md bg-[#1B5E20] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#2d7a4f]">
+              + Nouveau point de contrôle
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="border-b border-slate-100 bg-slate-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Nom</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Type</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Fréquence</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Responsable</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Actif</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="5" class="px-4 py-8 text-center text-xs text-slate-400">Aucun point de contrôle</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      @case ('documents') {
+        <div class="space-y-4">
+          <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+              <h3 class="text-sm font-semibold text-slate-700">Documents</h3>
+              <button type="button"
+                class="rounded-md bg-[#1B5E20] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#2d7a4f]">
+                + Nouveau document
+              </button>
+            </div>
+            <div class="p-5">
+              <p class="text-sm text-slate-400">Aucun document associé.</p>
+            </div>
+          </div>
+
+          <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+              <h3 class="text-sm font-semibold text-slate-700">Enregistrements</h3>
+              <button type="button"
+                class="rounded-md bg-[#1B5E20] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#2d7a4f]">
+                + Nouvel enregistrement
+              </button>
+            </div>
+            <div class="p-5">
+              <p class="text-sm text-slate-400">Aucun enregistrement associé.</p>
+            </div>
+          </div>
+        </div>
+      }
+
+      @case ('nc') {
+        <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+            <h3 class="text-sm font-semibold text-slate-700">Non-conformités liées</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="border-b border-slate-100 bg-slate-50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Référence</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Gravité</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Statut</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Source</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-slate-500">Détectée le</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="5" class="px-4 py-8 text-center text-xs text-slate-400">Aucune non-conformité</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+    }
+
+  </section>
+
+} @else {
+  <div class="flex flex-col items-center justify-center py-16 text-center">
+    <p class="text-slate-500">Processus introuvable.</p>
+    <a routerLink="/processus" class="mt-4 text-sm text-[#1B5E20] hover:underline">← Retour à la liste</a>
+  </div>
+}

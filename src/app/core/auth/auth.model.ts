@@ -8,7 +8,7 @@ export interface AuthUser {
   email: string;
   role: RoleUtilisateur;
   couleur: string;
-  token: string;
+  organisationId: string;
 }
 
 export interface LoginCredentials {
@@ -16,8 +16,18 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface RegisterCredentials {
+  nom:              string;
+  prenom:           string;
+  email:            string;
+  password:         string;
+  organisationCode: string;
+  fonction?:        string;
+  role?:            string;
+}
+
 export interface LoginResponse {
-  user: AuthUser;
   token: string;
   expiresIn: number;
+  user: AuthUser;
 }

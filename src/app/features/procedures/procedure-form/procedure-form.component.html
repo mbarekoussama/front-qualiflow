@@ -1,50 +1,88 @@
 <section class="space-y-6">
   <div>
-    <h1 class="text-2xl font-semibold">Nouvelle procédure</h1>
-    <p class="text-sm text-slate-500">Créer une procédure ISO 21001</p>
+    <h1 class="text-2xl font-semibold">{{ isEdit() ? 'Modifier la procédure' : 'Nouvelle procédure' }}</h1>
+    <p class="text-sm text-slate-500">{{ isEdit() ? 'Mettre à jour les informations' : 'Créer une procédure ISO 21001' }}</p>
   </div>
 
-  <form [formGroup]="form" class="space-y-6">
+  @if (error()) {
+    <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{{ error() }}</div>
+  }
+
+  <div class="space-y-6">
     <!-- Informations générales -->
     <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
       <div class="px-5 py-4 border-b border-slate-100">
         <h2 class="text-lg font-semibold">Informations générales</h2>
       </div>
       <div class="p-5 grid gap-4 md:grid-cols-2">
-        <div class="md:col-span-2">
-          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Intitulé *</label>
-          <input formControlName="intitule" type="text" placeholder="Titre de la procédure"
-            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" />
-          @if (formSubmitted() && form.controls.intitule.invalid) {
-            <p class="mt-1 text-xs text-red-600">L'intitulé est requis.</p>
-          }
-        </div>
+
         <div>
           <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Processus parent *</label>
-          <select formControlName="processusParent"
-            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
-            @for (opt of processusOptions(); track opt) {
-              <option [value]="opt">{{ opt }}</option>
+          <select class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+            [value]="processusId()" (change)="processusId.set($any($event.target).value)">
+            <option value="">-- Sélectionner --</option>
+            @for (p of processusList(); track p.id) {
+              <option [value]="p.id">{{ p.code }} — {{ p.nom }}</option>
             }
           </select>
-        </div>
-        <div>
-          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Statut</label>
-          <select formControlName="statut"
-            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
-            <option value="Active">Active</option>
-            <option value="En révision">En révision</option>
-            <option value="Archivée">Archivée</option>
-          </select>
-        </div>
-        <div class="md:col-span-2">
-          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Description *</label>
-          <textarea formControlName="description" rows="3"
-            placeholder="Décrire l'objet et le domaine d'application de la procédure"
-            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"></textarea>
-          @if (formSubmitted() && form.controls.description.invalid) {
-            <p class="mt-1 text-xs text-red-600">La description est requise.</p>
+          @if (submitted() && !processusId()) {
+            <p class="mt-1 text-xs text-red-600">Le processus est obligatoire.</p>
           }
+        </div>
+
+        <div>
+          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Code *</label>
+          <input type="text" placeholder="ex: PROC-001"
+            class="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [value]="code()" (input)="code.set($any($event.target).value)" />
+          @if (submitted() && !code()) {
+            <p class="mt-1 text-xs text-red-600">Le code est obligatoire.</p>
+          }
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Titre *</label>
+          <input type="text" placeholder="Titre de la procédure"
+            class="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [value]="titre()" (input)="titre.set($any($event.target).value)" />
+          @if (submitted() && !titre()) {
+            <p class="mt-1 text-xs text-red-600">Le titre est obligatoire.</p>
+          }
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Objectif *</label>
+          <textarea rows="2" placeholder="Objectif de la procédure"
+            class="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [value]="objectif()" (input)="objectif.set($any($event.target).value)"></textarea>
+          @if (submitted() && !objectif()) {
+            <p class="mt-1 text-xs text-red-600">L'objectif est obligatoire.</p>
+          }
+        </div>
+
+        <div>
+          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Domaine d'application</label>
+          <input type="text" placeholder="ex: Toute l'organisation"
+            class="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [value]="domaineApplication()" (input)="domaineApplication.set($any($event.target).value)" />
+        </div>
+
+        @if (isEdit()) {
+          <div>
+            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Statut</label>
+            <select class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+              [value]="statut()" (change)="statut.set($any($event.target).value)">
+              <option value="ACTIF">Actif</option>
+              <option value="INACTIF">Inactif</option>
+            </select>
+          </div>
+        }
+
+        <div class="md:col-span-2">
+          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Description</label>
+          <textarea rows="3" placeholder="Description détaillée"
+            class="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [value]="description()" (input)="description.set($any($event.target).value)"></textarea>
         </div>
       </div>
     </div>
@@ -52,75 +90,18 @@
     <!-- Responsable -->
     <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
       <div class="px-5 py-4 border-b border-slate-100">
-        <h2 class="text-lg font-semibold">Responsable</h2>
+        <h2 class="text-lg font-semibold">Responsable *</h2>
       </div>
       <div class="p-5">
-        <div class="flex flex-wrap gap-2">
-          @for (r of responsables(); track r.id) {
-            <button type="button"
-              class="flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition"
-              [class.border-emerald-500]="selectedResponsableId() === r.id"
-              [class.text-emerald-700]="selectedResponsableId() === r.id"
-              [class.bg-emerald-50]="selectedResponsableId() === r.id"
-              [class.border-slate-200]="selectedResponsableId() !== r.id"
-              (click)="selectResponsable(r.id)"
-            >
-              <span class="h-6 w-6 rounded-full text-white flex items-center justify-center text-[10px]"
-                [style.backgroundColor]="r.couleur">
-                {{ r.initiales }}
-              </span>
-              {{ r.prenom }} {{ r.nom }}
-            </button>
+        <select class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+          [value]="responsableId()" (change)="responsableId.set($any($event.target).value)">
+          <option value="">-- Sélectionner un responsable --</option>
+          @for (u of utilisateurs(); track u.id) {
+            <option [value]="u.id">{{ u.prenom }} {{ u.nom }}</option>
           }
-        </div>
-      </div>
-    </div>
-
-    <!-- Étapes -->
-    <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
-      <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-        <div>
-          <h2 class="text-lg font-semibold">Étapes de la procédure</h2>
-          <p class="text-xs text-slate-500">{{ etapeControls().length }} étape(s)</p>
-        </div>
-        <button type="button" (click)="addEtape()"
-          class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100">
-          + Ajouter une étape
-        </button>
-      </div>
-      <div class="p-5 space-y-3">
-        @for (ctrl of etapeControls(); track $index; let i = $index) {
-          <div [formGroup]="ctrl" class="rounded-lg border border-slate-200 p-4">
-            <div class="flex items-center justify-between mb-3">
-              <span class="h-6 w-6 rounded-full bg-[#1a5c38] text-white text-xs flex items-center justify-center font-semibold">
-                {{ i + 1 }}
-              </span>
-              <button type="button" (click)="removeEtape(i)"
-                class="text-xs text-red-500 hover:text-red-700">Supprimer</button>
-            </div>
-            <div class="grid gap-3 md:grid-cols-3">
-              <div class="md:col-span-3">
-                <label class="text-xs uppercase tracking-[0.15em] text-slate-400">Description *</label>
-                <input formControlName="description" type="text" placeholder="Description de l'étape"
-                  class="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label class="text-xs uppercase tracking-[0.15em] text-slate-400">Responsable</label>
-                <input formControlName="responsable" type="text" placeholder="Qui ?"
-                  class="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label class="text-xs uppercase tracking-[0.15em] text-slate-400">Délai</label>
-                <input formControlName="delai" type="text" placeholder="ex: 3 jours"
-                  class="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-sm" />
-              </div>
-            </div>
-          </div>
-        }
-        @empty {
-          <div class="rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-400">
-            Aucune étape. Cliquez sur "+ Ajouter une étape" pour commencer.
-          </div>
+        </select>
+        @if (submitted() && !responsableId()) {
+          <p class="mt-1 text-xs text-red-600">Le responsable est obligatoire.</p>
         }
       </div>
     </div>
@@ -131,10 +112,10 @@
         class="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 text-center">
         Annuler
       </a>
-      <button type="button" (click)="submit()"
-        class="rounded-md bg-[#1a5c38] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a4f]">
-        Créer la procédure
+      <button type="button" (click)="submit()" [disabled]="loading()"
+        class="rounded-md bg-[#1a5c38] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a4f] disabled:opacity-50">
+        {{ loading() ? 'Enregistrement…' : (isEdit() ? 'Enregistrer les modifications' : 'Créer la procédure') }}
       </button>
     </div>
-  </form>
+  </div>
 </section>

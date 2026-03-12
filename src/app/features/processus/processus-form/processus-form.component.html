@@ -1,251 +1,171 @@
-﻿<section class="space-y-6">
-  <div class="flex flex-col gap-2">
-    <h1 class="text-2xl font-semibold">Nouveau processus</h1>
-    <p class="text-sm text-slate-500">Créer un processus conforme ISO 21001</p>
+﻿<section class="mx-auto max-w-4xl space-y-6 py-2">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-800">
+        {{ isEdit() ? "Modifier le processus" : "Nouveau processus" }}
+      </h1>
+      <p class="mt-1 text-sm text-slate-500">Formulaire conforme ISO 21001</p>
+    </div>
+    <button type="button" (click)="annuler()"
+      class="rounded-md border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50">
+      Annuler
+    </button>
   </div>
 
-  <form [formGroup]="form" class="space-y-6">
-    <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
-      <div class="px-5 py-4 border-b border-slate-100">
-        <h2 class="text-lg font-semibold">Informations générales</h2>
-        <p class="text-xs text-slate-500">Identification et description du processus</p>
+  <!-- Error banner -->
+  @if (error()) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ error() }}
+    </div>
+  }
+
+  <form (ngSubmit)="submit()" class="space-y-6">
+
+    <!--  Section 1  Identification  -->
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-800">1. Identification</h2>
       </div>
-      <div class="p-5 grid gap-4 md:grid-cols-2">
+      <div class="grid gap-4 p-5 md:grid-cols-2">
+
         <div>
-          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Code *</label>
-          <input
-            formControlName="code"
-            type="text"
-            placeholder="P-01"
-            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-          />
-          @if (formSubmitted() && form.controls.code.invalid) {
-            <p class="mt-1 text-xs text-red-600">Le code est requis.</p>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Code * <span class="text-slate-400">(ex: P-01)</span></label>
+          <input type="text" placeholder="P-01"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B5E20]/30"
+            [class.border-red-400]="submitted() && !code().trim()"
+            [ngModel]="code()" (ngModelChange)="code.set($event)" name="code" />
+          @if (submitted() && !code().trim()) {
+            <p class="mt-1 text-xs text-red-600">Requis (format P-01)</p>
           }
         </div>
 
         <div>
-          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Intitulé *</label>
-          <input
-            formControlName="intitule"
-            type="text"
-            placeholder="Gestion documentaire"
-            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-          />
-          @if (formSubmitted() && form.controls.intitule.invalid) {
-            <p class="mt-1 text-xs text-red-600">L'intitulé est requis.</p>
-          }
-        </div>
-
-        <div>
-          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Type *</label>
-          <select
-            formControlName="type"
-            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-          >
-            <option value="Pilotage">Pilotage</option>
-            <option value="Opérationnel">Opérationnel</option>
-            <option value="Support">Support</option>
-            <option value="Mesure">Mesure</option>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Type *</label>
+          <select name="type"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B5E20]/30"
+            [ngModel]="type()" (ngModelChange)="type.set($event)">
+            <option value="PILOTAGE">Pilotage</option>
+            <option value="REALISATION">Réalisation</option>
+            <option value="SUPPORT">Support</option>
           </select>
         </div>
 
-        <div>
-          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Clause ISO 9001 *</label>
-          <input
-            formControlName="clauseISO"
-            type="text"
-            placeholder="8.1"
-            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-          />
-        </div>
-
-        <div class="md:col-span-2">
-          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Objectif *</label>
-          <textarea
-            formControlName="objectif"
-            rows="3"
-            placeholder="Décrire l'objectif principal du processus"
-            class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-          ></textarea>
-          @if (formSubmitted() && form.controls.objectif.invalid) {
-            <p class="mt-1 text-xs text-red-600">L'objectif est requis.</p>
-          }
-        </div>
       </div>
     </div>
 
-    <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
-      <div class="px-5 py-4 border-b border-slate-100">
-        <h2 class="text-lg font-semibold">Responsabilité</h2>
-        <p class="text-xs text-slate-500">Pilote, fréquence et dates</p>
+    <!--  Section 2  Informations générales  -->
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-800">2. Informations générales</h2>
       </div>
-      <div class="p-5 space-y-4">
+      <div class="space-y-4 p-5">
+
         <div>
-          <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Pilote *</label>
-          <div class="mt-3 flex flex-wrap gap-2">
-            @for (pilote of pilotes(); track pilote.id) {
-              <button
-                type="button"
-                class="flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold"
-                [class.border-emerald-500]="selectedPiloteId() === pilote.id"
-                [class.text-emerald-700]="selectedPiloteId() === pilote.id"
-                [class.bg-emerald-50]="selectedPiloteId() === pilote.id"
-                [class.border-slate-200]="selectedPiloteId() !== pilote.id"
-                (click)="selectPilote(pilote.id)"
-              >
-                <span
-                  class="h-6 w-6 rounded-full text-white flex items-center justify-center text-[10px]"
-                  [style.backgroundColor]="pilote.couleur"
-                >
-                  {{ pilote.initiales }}
-                </span>
-                {{ pilote.prenom }} {{ pilote.nom }}
-              </button>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Nom du processus *</label>
+          <input type="text" placeholder="Gestion documentaire"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B5E20]/30"
+            [class.border-red-400]="submitted() && !nom().trim()"
+            [ngModel]="nom()" (ngModelChange)="nom.set($event)" name="nom" />
+          @if (submitted() && !nom().trim()) {
+            <p class="mt-1 text-xs text-red-600">Requis</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Description</label>
+          <textarea rows="3" placeholder="Description facultative"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B5E20]/30 resize-none"
+            [ngModel]="description()" (ngModelChange)="description.set($event)" name="description">
+          </textarea>
+        </div>
+
+        <div class="grid gap-4 md:grid-cols-2">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Pilote *</label>
+            <select name="piloteId"
+              class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B5E20]/30"
+              [class.border-red-400]="submitted() && !piloteId()"
+              [ngModel]="piloteId()" (ngModelChange)="piloteId.set($event)">
+              <option value=""> Sélectionner un pilote </option>
+              @for (pilote of pilotes(); track pilote.id) {
+                <option [value]="pilote.id">{{ pilote.initiales }}  {{ pilote.nomComplet }}</option>
+              }
+            </select>
+            @if (submitted() && !piloteId()) {
+              <p class="mt-1 text-xs text-red-600">Requis</p>
             }
           </div>
-          @if (formSubmitted() && form.controls.piloteId.invalid) {
-            <p class="mt-2 text-xs text-red-600">Sélectionner un pilote.</p>
-          }
-        </div>
 
-        <div class="grid gap-4 md:grid-cols-3">
-          <div>
-            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Fréquence revue</label>
-            <select
-              formControlName="frequenceRevue"
-              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-            >
-              <option value="Mensuelle">Mensuelle</option>
-              <option value="Trimestrielle">Trimestrielle</option>
-              <option value="Semestrielle">Semestrielle</option>
-              <option value="Annuelle">Annuelle</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Date création</label>
-            <input
-              formControlName="dateCreation"
-              type="date"
-              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-            />
-          </div>
-          <div>
-            <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Prochaine revue</label>
-            <input
-              formControlName="prochaineRevue"
-              type="date"
-              class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
-      <div class="px-5 py-4 border-b border-slate-100">
-        <h2 class="text-lg font-semibold">KPI & Indicateurs</h2>
-        <p class="text-xs text-slate-500">{{ indicateursCount() }} indicateurs associés</p>
-      </div>
-      <div class="p-5 space-y-4">
-        <div class="flex flex-wrap gap-2">
-          @for (item of availableIndicateurs(); track item) {
-            <button
-              type="button"
-              class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600 hover:border-emerald-400"
-              (click)="addIndicateur(item)"
-            >
-              + {{ item }}
-            </button>
-          }
-        </div>
-
-        <div class="space-y-3">
-          @for (ctrl of indicateurControls; track $index; let i = $index) {
-            <div class="flex flex-col gap-2 rounded-md border border-slate-200 p-3 md:flex-row md:items-center">
-              <input
-                [formControl]="ctrl"
-                type="text"
-                placeholder="Nom de l'indicateur"
-                class="flex-1 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
-              />
-              <div class="flex items-center gap-2">
-                <button
-                  type="button"
-                  class="rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-500"
-                  (click)="moveIndicateur(i, -1)"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  class="rounded-md border border-slate-200 px-2 py-1 text-xs text-slate-500"
-                  (click)="moveIndicateur(i, 1)"
-                >
-                  ↓
-                </button>
-                <button
-                  type="button"
-                  class="rounded-md border border-red-200 px-2 py-1 text-xs text-red-600"
-                  (click)="removeIndicateur(i)"
-                >
-                  Supprimer
-                </button>
-              </div>
+          @if (isEdit()) {
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Statut</label>
+              <select name="statut"
+                class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+                [ngModel]="statut()" (ngModelChange)="statut.set($event)">
+                <option value="ACTIF">ACTIF</option>
+                <option value="INACTIF">INACTIF</option>
+              </select>
             </div>
           }
         </div>
 
-        <button
-          type="button"
-          class="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700"
-          (click)="addIndicateur()"
-        >
-          + Ajouter un indicateur
-        </button>
       </div>
     </div>
 
-    <div class="bg-white rounded-lg border border-slate-200 shadow-sm">
-      <div class="px-5 py-4 border-b border-slate-100">
-        <h2 class="text-lg font-semibold">Score de conformité initial</h2>
-        <p class="text-xs text-slate-500">Définir un score initial (0-100%)</p>
+    <!--  Section 3  Finalités, Objectifs, Périmètres  -->
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-800">3. Finalités et objectifs</h2>
       </div>
-      <div class="p-5">
-        <div class="flex flex-col gap-4 md:flex-row md:items-center">
-          <input
-            formControlName="tauxConformite"
-            type="range"
-            min="0"
-            max="100"
-            class="w-full"
-          />
-          <div class="text-2xl font-semibold" [ngClass]="scoreClass()">{{ scoreLabel() }}</div>
-        </div>
+      <div class="grid gap-6 p-5 md:grid-cols-2">
+        <app-tag-input label="Finalités *" placeholder="Ajouter une finalité"
+          [(value)]="finalites" />
+        @if (submitted() && finalites().length === 0) {
+          <p class="text-xs text-red-600 -mt-4">Au moins une finalité est requise.</p>
+        }
+        <app-tag-input label="Objectifs *" placeholder="Ajouter un objectif"
+          [(value)]="objectifs" />
+        @if (submitted() && objectifs().length === 0) {
+          <p class="text-xs text-red-600 -mt-4">Au moins un objectif est requis.</p>
+        }
+        <app-tag-input label="Périmètres" placeholder="Ajouter un périmètre"
+          [(value)]="perimetres" />
       </div>
     </div>
 
-    <div class="flex flex-col gap-3 md:flex-row md:justify-end">
-      <a
-        routerLink="/processus"
-        class="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600"
-      >
+    <!--  Section 4  Données du processus  -->
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-800">4. Données du processus</h2>
+      </div>
+      <div class="grid gap-6 p-5 md:grid-cols-2">
+        <app-tag-input label="Fournisseurs" placeholder="Ajouter un fournisseur"
+          [(value)]="fournisseurs" />
+        <app-tag-input label="Clients" placeholder="Ajouter un client"
+          [(value)]="clients" />
+        <app-tag-input label="Données d'entrée" placeholder="Ajouter une donnée d'entrée"
+          [(value)]="donneesEntree" />
+        <app-tag-input label="Données de sortie" placeholder="Ajouter une donnée de sortie"
+          [(value)]="donneesSortie" />
+      </div>
+    </div>
+
+    <!--  Footer actions  -->
+    <div class="flex items-center justify-end gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+      <button type="button" (click)="annuler()"
+        class="rounded-md border border-slate-200 px-5 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
         Annuler
-      </a>
-      <button
-        type="button"
-        class="rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700"
-        (click)="saveDraft()"
-      >
-        Enregistrer brouillon
       </button>
-      <button
-        type="button"
-        class="rounded-md bg-[#1a5c38] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a4f]"
-        (click)="submit()"
-      >
-        Créer le processus
+      <button type="submit"
+        [disabled]="loading()"
+        class="rounded-md bg-[#1B5E20] px-6 py-2 text-sm font-semibold text-white hover:bg-[#2d7a4f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        @if (loading()) { Enregistrement }
+        @else { {{ isEdit() ? "Enregistrer les modifications" : "Créer le processus" }} }
       </button>
     </div>
+
   </form>
+
 </section>

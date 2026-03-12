@@ -1,181 +1,143 @@
-﻿import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+﻿import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
+import { ProcessusService } from '../../../core/services/processus.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import {
-  FormArray,
-  FormBuilder,
-  FormControl,
-  ReactiveFormsModule,
-  Validators
-} from '@angular/forms';
-import { RouterLink } from '@angular/router';
-
-import { FrequenceRevue, ProcessusType } from '../../../shared/models/processus.model';
-import { Utilisateur } from '../../../shared/models/utilisateur.model';
-
-interface ProcessusFormModel {
-  code: FormControl<string>;
-  intitule: FormControl<string>;
-  type: FormControl<ProcessusType>;
-  clauseISO: FormControl<string>;
-  objectif: FormControl<string>;
-  piloteId: FormControl<string>;
-  frequenceRevue: FormControl<FrequenceRevue>;
-  dateCreation: FormControl<string>;
-  prochaineRevue: FormControl<string>;
-  tauxConformite: FormControl<number>;
-  indicateurs: FormArray<FormControl<string>>;
-}
+  CreateProcessusDto,
+  StatutProcessus,
+  TypeProcessus,
+  UpdateProcessusDto
+} from '../../../shared/models/processus.model';
+import { TagInputComponent } from '../../../shared/components/tag-input/tag-input.component';
 
 @Component({
   selector: 'app-processus-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [FormsModule, TagInputComponent],
   templateUrl: './processus-form.component.html',
   styleUrl: './processus-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessusFormComponent {
-  private readonly fb = inject(FormBuilder);
+export class ProcessusFormComponent implements OnInit {
+  private svc    = inject(ProcessusService);
+  private router = inject(Router);
+  private route  = inject(ActivatedRoute);
+  private readonly auth  = inject(AuthService);
 
-  readonly pilotes = signal<Utilisateur[]>([
-    {
-      id: 'u-01',
-      nom: 'Mansouri',
-      prenom: 'Amira',
-      initiales: 'AM',
-      email: 'a.mansouri@qualiflow.app',
-      role: 'Responsable Qualité',
-      couleur: '#1a5c38'
-    },
-    {
-      id: 'u-02',
-      nom: 'Mrad',
-      prenom: 'Kais',
-      initiales: 'KM',
-      email: 'k.mrad@qualiflow.app',
-      role: 'Pilote',
-      couleur: '#2d7a4f'
-    },
-    {
-      id: 'u-03',
-      nom: 'Haddad',
-      prenom: 'Rami',
-      initiales: 'RH',
-      email: 'r.haddad@qualiflow.app',
-      role: 'Pilote',
-      couleur: '#475569'
-    }
+  readonly orgId = this.auth.organisationId() ?? '00000000-0000-0000-0000-000000000001';
+
+  readonly editId   = signal<string | null>(null);
+  readonly isEdit   = computed(() => !!this.editId());
+  readonly loading  = this.svc.loading;
+  readonly error    = this.svc.error;
+  readonly submitted = signal(false);
+
+  // ── Form fields ────────────────────────────────────────────
+  readonly code         = signal('');
+  readonly nom          = signal('');
+  readonly description  = signal('');
+  readonly type         = signal<TypeProcessus>('REALISATION');
+  readonly statut       = signal<StatutProcessus>('ACTIF');
+  readonly piloteId     = signal('');
+  readonly finalites    = signal<string[]>([]);
+  readonly objectifs    = signal<string[]>([]);
+  readonly perimetres   = signal<string[]>([]);
+  readonly fournisseurs = signal<string[]>([]);
+  readonly clients      = signal<string[]>([]);
+  readonly donneesEntree = signal<string[]>([]);
+  readonly donneesSortie = signal<string[]>([]);
+
+  // Mock pilotes — in production load from UserService
+  readonly pilotes = signal([
+    { id: '00000000-0000-0000-0000-000000000010', nomComplet: 'Amira Mansouri', initiales: 'AM' },
+    { id: '00000000-0000-0000-0000-000000000011', nomComplet: 'Kais Mrad',      initiales: 'KM' },
+    { id: '00000000-0000-0000-0000-000000000012', nomComplet: 'Rami Haddad',    initiales: 'RH' },
   ]);
 
-  readonly availableIndicateurs = signal<string[]>([
-    'Satisfaction apprenants',
-    'Taux de conformité documentaire',
-    'Délais de traitement NC',
-    "Taux d'actions correctives efficaces",
-    "Couverture plan d'audit"
-  ]);
-
-  readonly selectedPiloteId = signal('');
-  readonly formSubmitted = signal(false);
-  readonly actionState = signal<'idle' | 'draft' | 'create'>('idle');
-
-  readonly form = this.fb.nonNullable.group<ProcessusFormModel>({
-    code: this.fb.nonNullable.control('', [Validators.required, Validators.minLength(2)]),
-    intitule: this.fb.nonNullable.control('', [Validators.required]),
-    type: this.fb.nonNullable.control<ProcessusType>('Pilotage', [Validators.required]),
-    clauseISO: this.fb.nonNullable.control('8.1', [Validators.required]),
-    objectif: this.fb.nonNullable.control('', [Validators.required]),
-    piloteId: this.fb.nonNullable.control('', [Validators.required]),
-    frequenceRevue: this.fb.nonNullable.control<FrequenceRevue>('Trimestrielle'),
-    dateCreation: this.fb.nonNullable.control(this.todayIso()),
-    prochaineRevue: this.fb.nonNullable.control(''),
-    tauxConformite: this.fb.nonNullable.control(75, [Validators.min(0), Validators.max(100)]),
-    indicateurs: this.fb.nonNullable.array<FormControl<string>>([])
-  });
-
-  readonly indicateursValues = toSignal(this.form.controls.indicateurs.valueChanges, {
-    initialValue: this.form.controls.indicateurs.value
-  });
-
-  readonly scoreValue = toSignal(this.form.controls.tauxConformite.valueChanges, {
-    initialValue: this.form.controls.tauxConformite.value
-  });
-
-  readonly selectedPilote = computed(() =>
-    this.pilotes().find((pilote) => pilote.id === this.selectedPiloteId()) ?? null
+  readonly isValid = computed(() =>
+    this.code().trim() !== '' &&
+    this.nom().trim() !== '' &&
+    this.piloteId() !== '' &&
+    this.finalites().length > 0 &&
+    this.objectifs().length > 0
   );
 
-  readonly scoreLabel = computed(() => `${this.scoreValue()}%`);
-
-  readonly scoreClass = computed(() => {
-    const value = this.scoreValue();
-    if (value < 65) {
-      return 'text-red-600';
+  async ngOnInit() {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.editId.set(id);
+      await this.svc.chargerParId(id);
+      const p = this.svc.selected();
+      if (p) {
+        this.code.set(p.code);
+        this.nom.set(p.nom);
+        this.description.set(p.description ?? '');
+        this.type.set(p.type);
+        this.statut.set(p.statut);
+        this.piloteId.set(p.pilote.id);
+        this.finalites.set([...p.finalites]);
+        this.objectifs.set([...p.objectifs]);
+        this.perimetres.set([...p.perimetres]);
+        this.fournisseurs.set([...p.fournisseurs]);
+        this.clients.set([...p.clients]);
+        this.donneesEntree.set([...p.donneesEntree]);
+        this.donneesSortie.set([...p.donneesSortie]);
+      }
     }
-    if (value < 80) {
-      return 'text-amber-600';
+  }
+
+  async submit() {
+    this.submitted.set(true);
+    if (!this.isValid()) return;
+
+    const code = this.code().trim().toUpperCase();
+    if (code !== this.code()) this.code.set(code);
+
+    try {
+      if (this.isEdit()) {
+        const dto: UpdateProcessusDto = {
+          id:            this.editId()!,
+          code,
+          nom:           this.nom(),
+          description:   this.description() || undefined,
+          type:          this.type(),
+          statut:        this.statut(),
+          finalites:     this.finalites(),
+          objectifs:     this.objectifs(),
+          perimetres:    this.perimetres(),
+          fournisseurs:  this.fournisseurs(),
+          clients:       this.clients(),
+          donneesEntree: this.donneesEntree(),
+          donneesSortie: this.donneesSortie(),
+          piloteId:      this.piloteId()
+        };
+        await this.svc.modifier(this.editId()!, dto);
+        this.router.navigate(['/processus', this.editId()]);
+      } else {
+        const dto: CreateProcessusDto = {
+          organisationId: this.orgId,
+          code,
+          nom:           this.nom(),
+          description:   this.description() || undefined,
+          type:          this.type(),
+          finalites:     this.finalites(),
+          objectifs:     this.objectifs(),
+          perimetres:    this.perimetres(),
+          fournisseurs:  this.fournisseurs(),
+          clients:       this.clients(),
+          donneesEntree: this.donneesEntree(),
+          donneesSortie: this.donneesSortie(),
+          piloteId:      this.piloteId()
+        };
+        const id = await this.svc.creer(dto);
+        this.router.navigate(['/processus', id]);
+      }
+    } catch {
+      // error handled by service signal
     }
-    return 'text-emerald-600';
-  });
-
-  readonly indicateursCount = computed(() => this.indicateursValues().length);
-
-  private readonly _initPilote = effect(() => {
-    const firstPilote = this.pilotes()[0];
-    if (firstPilote && !this.selectedPiloteId()) {
-      this.selectedPiloteId.set(firstPilote.id);
-    }
-  });
-
-  private readonly _syncPilote = effect(() => {
-    const id = this.selectedPiloteId();
-    if (id && this.form.controls.piloteId.value !== id) {
-      this.form.controls.piloteId.setValue(id);
-    }
-  });
-
-  get indicateurControls(): FormControl<string>[] {
-    return this.form.controls.indicateurs.controls;
   }
 
-  addIndicateur(value = ''): void {
-    this.form.controls.indicateurs.push(this.fb.nonNullable.control(value));
-  }
-
-  removeIndicateur(index: number): void {
-    this.form.controls.indicateurs.removeAt(index);
-  }
-
-  moveIndicateur(index: number, direction: -1 | 1): void {
-    const target = index + direction;
-    const array = this.form.controls.indicateurs;
-    if (target < 0 || target >= array.length) {
-      return;
-    }
-    const control = array.at(index);
-    array.removeAt(index);
-    array.insert(target, control);
-  }
-
-  selectPilote(id: string): void {
-    this.selectedPiloteId.set(id);
-  }
-
-  saveDraft(): void {
-    this.formSubmitted.set(true);
-    this.actionState.set('draft');
-  }
-
-  submit(): void {
-    this.formSubmitted.set(true);
-    if (this.form.invalid) {
-      return;
-    }
-    this.actionState.set('create');
-  }
-
-  private todayIso(): string {
-    return new Date().toISOString().slice(0, 10);
-  }
+  annuler() { this.router.navigate(['/processus']); }
 }

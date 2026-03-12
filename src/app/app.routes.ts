@@ -9,6 +9,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/login/login.component').then((m) => m.LoginComponent)
   },
+  {
+    path: 'register',
+    canActivate: [guestGuard],
+    loadComponent: () =>
+      import('./features/register/register.component').then((m) => m.RegisterComponent)
+  },
 
   // ─── Authenticated shell ────────────────────────────────────
   {
@@ -50,6 +56,13 @@ export const routes: Routes = [
             (m) => m.ProcessusFormComponent
           )
       },
+      {
+        path: 'processus/:id',
+        loadComponent: () =>
+          import('./features/processus/processus-detail/processus-detail.component').then(
+            (m) => m.ProcessusDetailComponent
+          )
+      },
 
       // Procédures
       {
@@ -74,12 +87,41 @@ export const routes: Routes = [
           )
       },
 
+      {
+        path: 'procedures/:id',
+        loadComponent: () =>
+          import('./features/procedures/procedure-detail/procedure-detail.component').then(
+            (m) => m.ProcedureDetailComponent
+          )
+      },
+
       // Documents
       {
         path: 'documents',
         loadComponent: () =>
           import('./features/documents/document-list/document-list.component').then(
             (m) => m.DocumentListComponent
+          )
+      },
+      {
+        path: 'documents/nouveau',
+        loadComponent: () =>
+          import('./features/documents/document-form/document-form.component').then(
+            (m) => m.DocumentFormComponent
+          )
+      },
+      {
+        path: 'documents/:id/edition',
+        loadComponent: () =>
+          import('./features/documents/document-form/document-form.component').then(
+            (m) => m.DocumentFormComponent
+          )
+      },
+      {
+        path: 'documents/:id',
+        loadComponent: () =>
+          import('./features/documents/document-detail/document-detail.component').then(
+            (m) => m.DocumentDetailComponent
           )
       },
 

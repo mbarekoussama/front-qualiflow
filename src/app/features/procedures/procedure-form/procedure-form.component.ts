@@ -1,102 +1,128 @@
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  signal,
-  computed,
-  effect
-} from '@angular/core';
-import { FormArray, FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
-import { StatutProcedure } from '../../../shared/models/procedure.model';
-import { Utilisateur } from '../../../shared/models/utilisateur.model';
+import { ProcedureService } from '../../../core/services/procedure.service';
+import { ProcessusService } from '../../../core/services/processus.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { environment } from '../../../../environments/environment';
+import { CreateProcedureDto, StatutProcedure, UpdateProcedureDto } from '../../../shared/models/procedure.model';
 
-interface EtapeForm {
-  ordre: FormControl<number>;
-  description: FormControl<string>;
-  responsable: FormControl<string>;
-  delai: FormControl<string>;
-}
+interface UtilisateurOption { id: string; nom: string; prenom: string; actif: boolean; }
 
 @Component({
   selector: 'app-procedure-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './procedure-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcedureFormComponent {
-  private readonly fb = inject(FormBuilder);
+export class ProcedureFormComponent implements OnInit {
+  private readonly svc          = inject(ProcedureService);
+  private readonly processusSvc = inject(ProcessusService);
+  private readonly http         = inject(HttpClient);
+  private readonly router       = inject(Router);
+  private readonly route        = inject(ActivatedRoute);
 
-  readonly responsables = signal<Utilisateur[]>([
-    { id: 'u-01', nom: 'Mansouri', prenom: 'Amira', initiales: 'AM', email: 'a.mansouri@qualiflow.app', role: 'Responsable Qualité', couleur: '#1a5c38' },
-    { id: 'u-02', nom: 'Mrad', prenom: 'Kais', initiales: 'KM', email: 'k.mrad@qualiflow.app', role: 'Pilote', couleur: '#2d7a4f' },
-    { id: 'u-03', nom: 'Ben Ali', prenom: 'Sana', initiales: 'SB', email: 's.benali@qualiflow.app', role: 'Auditeur', couleur: '#0f766e' },
-    { id: 'u-04', nom: 'Haddad', prenom: 'Rami', initiales: 'RH', email: 'r.haddad@qualiflow.app', role: 'Pilote', couleur: '#475569' }
-  ]);
+  private readonly auth = inject(AuthService);
+  readonly orgId  = this.auth.organisationId() ?? '00000000-0000-0000-0000-000000000001';
+  readonly editId = signal<string | null>(null);
+  readonly isEdit = computed(() => !!this.editId());
 
-  readonly processusOptions = signal(['P-01', 'P-02', 'P-03', 'P-04', 'P-05']);
-  readonly formSubmitted = signal(false);
-  readonly selectedResponsableId = signal('u-01');
+  readonly loading   = this.svc.loading;
+  readonly error     = this.svc.error;
+  readonly submitted = signal(false);
 
-  readonly form = this.fb.nonNullable.group({
-    intitule: this.fb.nonNullable.control('', [Validators.required]),
-    processusParent: this.fb.nonNullable.control('P-01', [Validators.required]),
-    description: this.fb.nonNullable.control('', [Validators.required]),
-    responsableId: this.fb.nonNullable.control('u-01', [Validators.required]),
-    statut: this.fb.nonNullable.control<StatutProcedure>('Active'),
-    etapes: this.fb.nonNullable.array<ReturnType<typeof this.newEtapeGroup>>([])
-  });
+  // ── Dropdowns ──────────────────────────────────────────────
+  readonly processusList = this.processusSvc.items;
+  readonly utilisateurs  = signal<UtilisateurOption[]>([]);
 
-  readonly selectedResponsable = computed(() =>
-    this.responsables().find((r) => r.id === this.selectedResponsableId()) ?? null
+  // ── Form fields ────────────────────────────────────────────
+  readonly processusId        = signal('');
+  readonly code               = signal('');
+  readonly titre              = signal('');
+  readonly objectif           = signal('');
+  readonly domaineApplication = signal('');
+  readonly description        = signal('');
+  readonly responsableId      = signal('');
+  readonly statut             = signal<StatutProcedure>('ACTIF');
+
+  readonly isValid = computed(() =>
+    this.processusId().trim() !== '' &&
+    this.code().trim() !== '' &&
+    this.titre().trim() !== '' &&
+    this.objectif().trim() !== '' &&
+    this.responsableId().trim() !== ''
   );
 
-  readonly etapeControls = computed(
-    () => this.form.controls.etapes.controls
-  );
+  async ngOnInit(): Promise<void> {
+    const [,users] = await Promise.all([
+      this.processusSvc.chargerListe(this.orgId),
+      firstValueFrom(
+        this.http.get<UtilisateurOption[]>(
+          `${environment.apiUrl}/utilisateurs`,
+          { params: new HttpParams().set('organisationId', this.orgId) }
+        )
+      ).catch(() => [
+        { id: '00000000-0000-0000-0000-000000000010', nom: 'Mansouri', prenom: 'Amira', actif: true },
+        { id: '00000000-0000-0000-0000-000000000011', nom: 'Mrad',     prenom: 'Kais',  actif: true },
+        { id: '00000000-0000-0000-0000-000000000012', nom: 'Haddad',   prenom: 'Rami',  actif: true },
+      ])
+    ]);
+    this.utilisateurs.set(users.filter(u => u.actif));
 
-  private readonly _syncResponsable = effect(() => {
-    const id = this.selectedResponsableId();
-    if (this.form.controls.responsableId.value !== id) {
-      this.form.controls.responsableId.setValue(id);
+    // Edit mode
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
+      this.editId.set(id);
+      await this.svc.chargerParId(id);
+      const p = this.svc.selected();
+      if (p) {
+        this.processusId.set(p.processusId);
+        this.code.set(p.code);
+        this.titre.set(p.titre);
+        this.objectif.set(p.objectif);
+        this.domaineApplication.set(p.domaineApplication ?? '');
+        this.description.set(p.description ?? '');
+        this.responsableId.set(p.responsableId);
+        this.statut.set(p.statut);
+      }
     }
-  });
-
-  newEtapeGroup(ordre: number) {
-    return this.fb.nonNullable.group<EtapeForm>({
-      ordre: this.fb.nonNullable.control(ordre),
-      description: this.fb.nonNullable.control('', [Validators.required]),
-      responsable: this.fb.nonNullable.control(''),
-      delai: this.fb.nonNullable.control('')
-    });
   }
 
-  addEtape(): void {
-    const next = this.form.controls.etapes.length + 1;
-    this.form.controls.etapes.push(this.newEtapeGroup(next));
-  }
-
-  removeEtape(index: number): void {
-    this.form.controls.etapes.removeAt(index);
-    this.reorderEtapes();
-  }
-
-  selectResponsable(id: string): void {
-    this.selectedResponsableId.set(id);
-  }
-
-  submit(): void {
-    this.formSubmitted.set(true);
-    if (this.form.invalid) return;
-    console.log('Procedure form submitted:', this.form.getRawValue());
-  }
-
-  private reorderEtapes(): void {
-    this.form.controls.etapes.controls.forEach((ctrl, i) => {
-      ctrl.controls.ordre.setValue(i + 1);
-    });
+  async submit(): Promise<void> {
+    this.submitted.set(true);
+    if (!this.isValid()) return;
+    try {
+      if (this.isEdit()) {
+        await this.svc.modifier({
+          id:                 this.editId()!,
+          processusId:        this.processusId(),
+          code:               this.code(),
+          titre:              this.titre(),
+          objectif:           this.objectif(),
+          domaineApplication: this.domaineApplication() || null,
+          description:        this.description() || null,
+          responsableId:      this.responsableId(),
+          statut:             this.statut(),
+        } as UpdateProcedureDto);
+        await this.router.navigate(['/procedures']);
+      } else {
+        const newId = await this.svc.creer({
+          organisationId:     this.orgId,
+          processusId:        this.processusId(),
+          code:               this.code(),
+          titre:              this.titre(),
+          objectif:           this.objectif(),
+          domaineApplication: this.domaineApplication() || null,
+          description:        this.description() || null,
+          responsableId:      this.responsableId(),
+        } as CreateProcedureDto);
+        await this.router.navigate(['/procedures', newId]);
+      }
+    } catch { /* error shown via svc.error signal */ }
   }
 }

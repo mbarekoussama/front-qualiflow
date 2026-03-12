@@ -1,188 +1,94 @@
-﻿import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+﻿import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal
+} from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 
-import { Processus, ProcessusType, StatutProcessus } from '../../../shared/models/processus.model';
-import { Utilisateur } from '../../../shared/models/utilisateur.model';
+import { ProcessusService } from '../../../core/services/processus.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import {
+  ProcessusListItem,
+  TypeProcessus,
+  StatutProcessus
+} from '../../../shared/models/processus.model';
 
 @Component({
   selector: 'app-processus-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [RouterLink],
   templateUrl: './processus-list.component.html',
   styleUrl: './processus-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessusListComponent {
-  private readonly utilisateurs: Utilisateur[] = [
-    {
-      id: 'u-01',
-      nom: 'Mansouri',
-      prenom: 'Amira',
-      initiales: 'AM',
-      email: 'a.mansouri@qualiflow.app',
-      role: 'Responsable Qualité',
-      couleur: '#1a5c38'
-    },
-    {
-      id: 'u-02',
-      nom: 'Mrad',
-      prenom: 'Kais',
-      initiales: 'KM',
-      email: 'k.mrad@qualiflow.app',
-      role: 'Pilote',
-      couleur: '#2d7a4f'
-    },
-    {
-      id: 'u-03',
-      nom: 'Haddad',
-      prenom: 'Rami',
-      initiales: 'RH',
-      email: 'r.haddad@qualiflow.app',
-      role: 'Pilote',
-      couleur: '#475569'
-    }
-  ];
+export class ProcessusListComponent implements OnInit {
+  readonly svc    = inject(ProcessusService);
+  private  router = inject(Router);
+  private readonly auth  = inject(AuthService);
 
-  readonly processus = signal<Processus[]>([
-    {
-      id: 'P-01',
-      code: 'P-01',
-      intitule: 'Pilotage stratégique',
-      type: 'Pilotage',
-      objectif: 'Aligner la vision et les objectifs qualité',
-      perimetre: 'Gouvernance',
-      pilote: this.utilisateurs[0],
-      clauseISO: '5.1',
-      frequenceRevue: 'Trimestrielle',
-      prochaineRevue: new Date('2026-04-15'),
-      tauxConformite: 92,
-      statut: 'Conforme',
-      indicateurs: ['IND-01', 'IND-02'],
-      procedures: ['PRO-001', 'PRO-002'],
-      documents: ['MQ-001', 'PR-001'],
-      dateCreation: new Date('2024-10-05'),
-      actif: true
-    },
-    {
-      id: 'P-02',
-      code: 'P-02',
-      intitule: 'Gestion documentaire',
-      type: 'Support',
-      objectif: 'Maîtriser les documents du SMS',
-      perimetre: 'Qualité',
-      pilote: this.utilisateurs[1],
-      clauseISO: '7.5',
-      frequenceRevue: 'Semestrielle',
-      prochaineRevue: new Date('2026-06-02'),
-      tauxConformite: 78,
-      statut: 'À surveiller',
-      indicateurs: ['IND-03'],
-      procedures: ['PRO-004'],
-      documents: ['DOC-010', 'DOC-011', 'DOC-012'],
-      dateCreation: new Date('2025-01-11'),
-      actif: true
-    },
-    {
-      id: 'P-03',
-      code: 'P-03',
-      intitule: 'Satisfaction apprenants',
-      type: 'Mesure',
-      objectif: 'Mesurer la satisfaction des bénéficiaires',
-      perimetre: 'Pédagogie',
-      pilote: this.utilisateurs[2],
-      clauseISO: '9.1',
-      frequenceRevue: 'Mensuelle',
-      prochaineRevue: new Date('2026-03-25'),
-      tauxConformite: 66,
-      statut: 'À surveiller',
-      indicateurs: ['IND-05'],
-      procedures: ['PRO-006'],
-      documents: ['ENR-022'],
-      dateCreation: new Date('2025-05-02'),
-      actif: true
-    },
-    {
-      id: 'P-04',
-      code: 'P-04',
-      intitule: 'Audit interne',
-      type: 'Mesure',
-      objectif: 'Évaluer la conformité du SMS',
-      perimetre: 'Contrôle',
-      pilote: this.utilisateurs[0],
-      clauseISO: '9.2',
-      frequenceRevue: 'Annuelle',
-      prochaineRevue: new Date('2026-11-08'),
-      tauxConformite: 84,
-      statut: 'Conforme',
-      indicateurs: ['IND-06'],
-      procedures: ['PRO-007'],
-      documents: ['ENR-030', 'ENR-031'],
-      dateCreation: new Date('2024-09-18'),
-      actif: true
-    },
-    {
-      id: 'P-05',
-      code: 'P-05',
-      intitule: 'Traitement des non-conformités',
-      type: 'Opérationnel',
-      objectif: 'Gérer les écarts et actions correctives',
-      perimetre: 'Qualité',
-      pilote: this.utilisateurs[2],
-      clauseISO: '10.2',
-      frequenceRevue: 'Trimestrielle',
-      prochaineRevue: new Date('2026-05-12'),
-      tauxConformite: 58,
-      statut: 'Non conforme',
-      indicateurs: ['IND-04'],
-      procedures: ['PRO-009', 'PRO-010'],
-      documents: ['NC-REG'],
-      dateCreation: new Date('2025-09-09'),
-      actif: true
-    }
-  ]);
+  readonly orgId = this.auth.organisationId() ?? '00000000-0000-0000-0000-000000000001';
 
-  readonly typeFilter = signal<ProcessusType | 'Tous'>('Tous');
-  readonly statusFilter = signal<StatutProcessus | 'Tous'>('Tous');
-  readonly visibleCount = signal(0);
+  readonly searchTerm   = signal('');
+  readonly typeFilter   = signal<TypeProcessus | ''>('');
+  readonly statutFilter = signal<StatutProcessus | ''>('');
 
-  readonly filteredProcessus = computed(() => {
-    return this.processus().filter((item) => {
-      const typeOk = this.typeFilter() === 'Tous' || item.type === this.typeFilter();
-      const statusOk = this.statusFilter() === 'Tous' || item.statut === this.statusFilter();
-      return typeOk && statusOk;
+  readonly filteredItems = computed(() => {
+    const search = this.searchTerm().toLowerCase();
+    const type   = this.typeFilter();
+    const statut = this.statutFilter();
+    return this.svc.items().filter(p => {
+      const matchSearch = !search ||
+        p.nom.toLowerCase().includes(search) ||
+        p.code.toLowerCase().includes(search);
+      const matchType   = !type   || p.type === type;
+      const matchStatut = !statut || p.statut === statut;
+      return matchSearch && matchType && matchStatut;
     });
   });
 
-  private readonly _syncVisibleCount = effect(() => {
-    this.visibleCount.set(this.filteredProcessus().length);
-  });
+  readonly stats = this.svc.statsByType;
 
-  progressColor(value: number): string {
-    if (value < 65) {
-      return 'bg-red-500';
-    }
-    if (value < 80) {
-      return 'bg-amber-500';
-    }
-    return 'bg-green-600';
+  async ngOnInit() {
+    await this.svc.chargerListe(this.orgId);
   }
 
-  statusClass(status: StatutProcessus): string {
-    if (status === 'Conforme') {
-      return 'border-green-600 text-green-700';
-    }
-    if (status === 'À surveiller') {
-      return 'border-amber-500 text-amber-600';
-    }
-    return 'border-red-600 text-red-600';
+  setSearchTerm(value: string) { this.searchTerm.set(value); }
+  setTypeFilter(value: string)  { this.typeFilter.set(value as TypeProcessus | ''); }
+  setStatutFilter(value: string){ this.statutFilter.set(value as StatutProcessus | ''); }
+
+  async supprimer(item: ProcessusListItem) {
+    if (!confirm(`Supprimer « ${item.nom} » ?`)) return;
+    await this.svc.supprimer(item.id);
+    await this.svc.chargerListe(this.orgId);
   }
 
-  updateTypeFilter(value: string): void {
-    this.typeFilter.set(value as ProcessusType | 'Tous');
+  voirDetail(id: string) { this.router.navigate(['/processus', id]); }
+  editer(id: string)     { this.router.navigate(['/processus', id, 'edition']); }
+
+  typeBadgeClass(type: TypeProcessus): string {
+    return ({
+      PILOTAGE   : 'bg-slate-100 text-slate-700',
+      REALISATION: 'bg-blue-100 text-blue-700',
+      SUPPORT    : 'bg-orange-100 text-orange-700',
+    })[type] ?? 'bg-slate-100 text-slate-700';
   }
 
-  updateStatusFilter(value: string): void {
-    this.statusFilter.set(value as StatutProcessus | 'Tous');
+  typeBadgeLabel(type: TypeProcessus): string {
+    return ({ PILOTAGE: 'Pilotage', REALISATION: 'Réalisation', SUPPORT: 'Support' })[type] ?? type;
+  }
+
+  statutClass(statut: StatutProcessus): string {
+    return statut === 'ACTIF'
+      ? 'border-green-600 bg-green-50 text-green-700'
+      : 'border-slate-400 bg-slate-50 text-slate-500';
+  }
+
+  piloteColor(initiales: string): string {
+    const colors = ['#1B5E20','#1565C0','#C62828','#6A1B9A','#00695C','#E65100'];
+    const idx = ((initiales.charCodeAt(0) || 0) + (initiales.charCodeAt(1) || 0)) % colors.length;
+    return colors[idx];
   }
 }

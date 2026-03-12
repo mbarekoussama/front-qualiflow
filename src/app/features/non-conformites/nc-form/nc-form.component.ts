@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
-import { Utilisateur } from '../../../shared/models/utilisateur.model';
-import { PrioriteNonConformite, SourceNonConformite } from '../../../shared/models/non-conformite.model';
+import { GraviteNC, SourceNC } from '../../../shared/models/non-conformite.model';
+import { NonConformiteService } from '../../../core/services/non-conformite.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { ProcessusService } from '../../../core/services/processus.service';
 
 @Component({
   selector: 'app-nc-form',
@@ -13,42 +15,90 @@ import { PrioriteNonConformite, SourceNonConformite } from '../../../shared/mode
   templateUrl: './nc-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NcFormComponent {
-  private readonly fb = inject(FormBuilder);
+export class NcFormComponent implements OnInit {
+  private readonly fb      = inject(FormBuilder);
+  private readonly svc     = inject(NonConformiteService);
+  private readonly auth    = inject(AuthService);
+  private readonly procSvc = inject(ProcessusService);
+  private readonly router  = inject(Router);
 
-  readonly responsables = signal<Utilisateur[]>([
-    { id: 'u-01', nom: 'Mansouri', prenom: 'Amira', initiales: 'AM', email: 'a.mansouri@qualiflow.app', role: 'Responsable Qualité', couleur: '#1a5c38' },
-    { id: 'u-02', nom: 'Mrad', prenom: 'Kais', initiales: 'KM', email: 'k.mrad@qualiflow.app', role: 'Pilote', couleur: '#2d7a4f' },
-    { id: 'u-03', nom: 'Ben Ali', prenom: 'Sana', initiales: 'SB', email: 's.benali@qualiflow.app', role: 'Auditeur', couleur: '#0f766e' },
-    { id: 'u-04', nom: 'Haddad', prenom: 'Rami', initiales: 'RH', email: 'r.haddad@qualiflow.app', role: 'Pilote', couleur: '#475569' }
-  ]);
-
-  readonly processusOptions = signal(['P-01', 'P-02', 'P-03', 'P-04', 'P-05']);
+  readonly loading       = this.svc.loading;
+  readonly error         = this.svc.error;
+  readonly responsables  = this.svc.utilisateurs;
   readonly formSubmitted = signal(false);
+  readonly successMsg    = signal<string | null>(null);
 
-  readonly sources: SourceNonConformite[] = [
-    'Audit interne', 'Réclamation client', 'Contrôle interne', 'Externe'
+  readonly processusOptions = signal<{ id: string; nom: string; code: string }[]>([]);
+
+  readonly sources: { value: SourceNC; label: string }[] = [
+    { value: 'AUDIT',          label: 'Audit interne' },
+    { value: 'POINT_CONTROLE', label: 'Point de contrôle' },
+    { value: 'RECLAMATION',    label: 'Réclamation' },
+    { value: 'AUTRE',          label: 'Autre' },
   ];
-  readonly priorites: PrioriteNonConformite[] = ['Faible', 'Moyenne', 'Élevée', 'Critique'];
+
+  readonly gravites: { value: GraviteNC; label: string }[] = [
+    { value: 'MINEURE',  label: 'Mineure' },
+    { value: 'MAJEURE',  label: 'Majeure' },
+    { value: 'CRITIQUE', label: 'Critique' },
+  ];
 
   readonly form = this.fb.nonNullable.group({
-    description: ['', [Validators.required, Validators.minLength(10)]],
-    processus: ['P-01', [Validators.required]],
-    source: ['Audit interne' as SourceNonConformite, [Validators.required]],
-    priorite: ['Moyenne' as PrioriteNonConformite, [Validators.required]],
-    responsableId: ['u-01', [Validators.required]],
-    causeRacine: [''],
-    dateDetection: [this.todayIso(), [Validators.required]],
-    dateEcheance: ['', [Validators.required]]
+    description:             ['', [Validators.required, Validators.minLength(10)]],
+    nature:                  ['', [Validators.required]],
+    type:                    ['', [Validators.required]],
+    processusId:             ['', [Validators.required]],
+    source:                  ['AUDIT' as SourceNC,  [Validators.required]],
+    gravite:                 ['MAJEURE' as GraviteNC,[Validators.required]],
+    responsableTraitementId: ['', [Validators.required]],
+    dateEcheance:            ['', [Validators.required]],
   });
 
-  submit(): void {
+  async ngOnInit(): Promise<void> {
+    const orgId = this.auth.organisationId() ?? '';
+    if (!orgId) return;
+    await Promise.all([
+      this.svc.chargerUtilisateurs(orgId),
+      this.procSvc.chargerListe(orgId, { pageSize: 100 }),
+    ]);
+    this.processusOptions.set(
+      this.procSvc.items().map(p => ({ id: p.id, nom: p.nom, code: p.code }))
+    );
+    // set defaults if available
+    if (this.responsables().length > 0)
+      this.form.controls.responsableTraitementId.setValue(this.responsables()[0].id);
+    if (this.processusOptions().length > 0)
+      this.form.controls.processusId.setValue(this.processusOptions()[0].id);
+  }
+
+  async submit(): Promise<void> {
     this.formSubmitted.set(true);
     if (this.form.invalid) return;
-    console.log('NC form submitted:', this.form.getRawValue());
+
+    const orgId     = this.auth.organisationId() ?? '';
+    const currentId = this.auth.currentUser()?.id ?? '';
+    const v         = this.form.getRawValue();
+
+    const id = await this.svc.creer({
+      organisationId:          orgId,
+      processusId:             v.processusId,
+      description:             v.description,
+      nature:                  v.nature,
+      type:                    v.type,
+      source:                  v.source,
+      gravite:                 v.gravite,
+      responsableTraitementId: v.responsableTraitementId,
+      dateEcheance:            v.dateEcheance,
+      detecteParId:            currentId,
+    });
+
+    if (id) {
+      this.router.navigate(['/non-conformites', id]);
+    }
   }
 
   private todayIso(): string {
     return new Date().toISOString().slice(0, 10);
   }
 }
+

@@ -1,12 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute } from '@angular/router';
-import { inject } from '@angular/core';
 
-import { NonConformite } from '../../../shared/models/non-conformite.model';
-import { Utilisateur } from '../../../shared/models/utilisateur.model';
+import {
+  GRAVITE_LABEL,
+  SOURCE_NC_LABEL,
+  STATUT_ACTION_LABEL,
+  METHODE_LABEL,
+} from '../../../shared/models/non-conformite.model';
 import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
 import { ProgressBarComponent } from '../../../shared/components/progress-bar/progress-bar.component';
+import { NonConformiteService } from '../../../core/services/non-conformite.service';
 
 @Component({
   selector: 'app-nc-detail',
@@ -15,36 +19,27 @@ import { ProgressBarComponent } from '../../../shared/components/progress-bar/pr
   templateUrl: './nc-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class NcDetailComponent {
+export class NcDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly svc   = inject(NonConformiteService);
 
-  readonly ncId = signal(this.route.snapshot.paramMap.get('id') ?? '');
+  readonly loading = this.svc.loading;
+  readonly error   = this.svc.error;
+  readonly nc      = computed(() => this.svc.selected());
 
-  private readonly utilisateurs: Utilisateur[] = [
-    { id: 'u-01', nom: 'Mansouri', prenom: 'Amira', initiales: 'AM', email: 'a.mansouri@qualiflow.app', role: 'Responsable Qualité', couleur: '#1a5c38' },
-    { id: 'u-03', nom: 'Ben Ali', prenom: 'Sana', initiales: 'SB', email: 's.benali@qualiflow.app', role: 'Auditeur', couleur: '#0f766e' }
-  ];
+  readonly GRAVITE_LABEL       = GRAVITE_LABEL;
+  readonly SOURCE_NC_LABEL     = SOURCE_NC_LABEL;
+  readonly STATUT_ACTION_LABEL = STATUT_ACTION_LABEL;
+  readonly METHODE_LABEL       = METHODE_LABEL;
 
-  readonly nc = signal<NonConformite>({
-    id: this.ncId(),
-    description: 'Retard de mise à jour du manuel qualité',
-    processus: 'P-02',
-    detectePar: this.utilisateurs[1],
-    responsable: this.utilisateurs[0],
-    dateDetection: new Date('2026-02-12'),
-    priorite: 'Élevée',
-    source: 'Audit interne',
-    causeRacine: "Charge de travail trop importante sur la période de révision documentaire, absence de rappel automatisé",
-    statut: 'Ouverte',
-    avancement: 25,
-    actionsCorrectives: ['AC-11'],
-    preuves: [],
-    dateEcheance: new Date('2026-03-30')
-  });
+  readonly activeTab = signal<'details' | 'actions' | 'analyses' | 'historique'>('details');
 
-  readonly activeTab = signal<'details' | 'actions' | 'preuves' | 'historique'>('details');
+  async ngOnInit(): Promise<void> {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) await this.svc.chargerDetail(id);
+  }
 
-  setTab(tab: 'details' | 'actions' | 'preuves' | 'historique'): void {
+  setTab(tab: 'details' | 'actions' | 'analyses' | 'historique'): void {
     this.activeTab.set(tab);
   }
 }

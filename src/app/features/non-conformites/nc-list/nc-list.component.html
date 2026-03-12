@@ -1,4 +1,11 @@
 <section class="space-y-6">
+  @if (loading()) {
+    <div class="flex items-center justify-center py-20 text-slate-400 text-sm">Chargement…</div>
+  }
+  @if (error()) {
+    <div class="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{{ error() }}</div>
+  }
+  <div [class.opacity-50]="loading()">
   <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
     <div>
       <h1 class="text-2xl font-semibold">Non-Conformités</h1>
@@ -32,6 +39,7 @@
   <div class="flex flex-wrap gap-3 sm:items-center">
     <select
       class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
+      title="Filtrer par processus"
       [value]="processusFilter()"
       (change)="updateProcessusFilter($any($event.target).value)"
     >
@@ -41,25 +49,26 @@
     </select>
     <select
       class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
-      [value]="prioriteFilter()"
-      (change)="updatePrioriteFilter($any($event.target).value)"
+      title="Filtrer par gravité"
+      [value]="graviteFilter()"
+      (change)="updateGraviteFilter($any($event.target).value)"
     >
-      <option value="Tous">Toutes priorités</option>
-      <option value="Critique">Critique</option>
-      <option value="Élevée">Élevée</option>
-      <option value="Moyenne">Moyenne</option>
-      <option value="Faible">Faible</option>
+      <option value="Tous">Toutes gravités</option>
+      <option value="CRITIQUE">Critique</option>
+      <option value="MAJEURE">Majeure</option>
+      <option value="MINEURE">Mineure</option>
     </select>
     <select
       class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
+      title="Filtrer par statut"
       [value]="statutFilter()"
       (change)="updateStatutFilter($any($event.target).value)"
     >
       <option value="Tous">Tous les statuts</option>
-      <option value="Ouverte">Ouverte</option>
-      <option value="En cours">En cours</option>
-      <option value="Clôturée">Clôturée</option>
-      <option value="Rejetée">Rejetée</option>
+      <option value="OUVERTE">Ouverte</option>
+      <option value="ANALYSE">Analyse</option>
+      <option value="ACTION_EN_COURS">En cours</option>
+      <option value="CLOTUREE">Clôturée</option>
     </select>
   </div>
 
@@ -84,7 +93,7 @@
         <tbody class="divide-y divide-slate-100">
         @for (nc of filteredNcs(); track nc.id) {
           <tr class="hover:bg-slate-50 transition text-slate-700">
-            <td class="px-5 py-3 font-mono text-xs font-semibold text-slate-600">{{ nc.id }}</td>
+            <td class="px-5 py-3 font-mono text-xs font-semibold text-slate-600">{{ nc.reference || nc.id }}</td>
             <td class="px-5 py-3">
               <div class="text-slate-800 font-medium max-w-xs">{{ nc.description }}</div>
               <div class="text-xs text-slate-400 mt-0.5">Détecté le {{ nc.dateDetection | date: 'dd/MM/yyyy' }}</div>
@@ -92,10 +101,10 @@
             <td class="px-5 py-3">
               <span class="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">{{ nc.processus }}</span>
             </td>
-            <td class="px-5 py-3 text-xs text-slate-500">{{ nc.source }}</td>
+            <td class="px-5 py-3 text-xs text-slate-500">{{ sourceLabel(nc.source) }}</td>
             <td class="px-5 py-3">
-              <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="priorityClass(nc.priorite)">
-                {{ nc.priorite }}
+              <span class="rounded-full px-2.5 py-0.5 text-xs font-semibold" [ngClass]="graviteClass(nc.priorite)">
+                {{ graviteLabel(nc.priorite) }}
               </span>
             </td>
             <td class="px-5 py-3 w-40">
@@ -134,4 +143,5 @@
       </table>
     </div>
   </div>
+</div>
 </section>

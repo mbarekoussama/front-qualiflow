@@ -1,0 +1,193 @@
+<section class="mx-auto max-w-2xl space-y-8 py-2">
+
+  <!-- Header -->
+  <div class="flex items-center gap-3">
+    <button (click)="cancel()"
+      class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-50">
+      &#8592;
+    </button>
+    <div>
+      <h1 class="text-xl font-semibold text-slate-800">
+        {{ isEdit() ? 'Modifier le document' : 'Nouveau document' }}
+      </h1>
+      <p class="text-sm text-slate-400">
+        {{ isEdit() ? 'Mettre à jour les informations du document' : 'Créer un document et sa première version' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ error() }}
+    </div>
+  }
+
+  <form (ngSubmit)="submit()" class="space-y-6">
+
+    <!-- Section: Informations générales -->
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-6 py-4">
+        <h2 class="font-semibold text-slate-700">Informations générales</h2>
+      </div>
+      <div class="grid grid-cols-1 gap-5 px-6 py-5 sm:grid-cols-2">
+
+        <!-- Code -->
+        <div class="space-y-1">
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Code <span class="text-red-500">*</span>
+          </label>
+          <input type="text" placeholder="ex: DOC-001, MQ-001, ENR-010"
+            class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-[#1a5c38] focus:ring-1 focus:ring-[#1a5c38]"
+            [class.border-red-400]="submitted() && !code().trim()"
+            [class.border-slate-200]="!(submitted() && !code().trim())"
+            [ngModel]="code()" name="code"
+            (ngModelChange)="code.set($event)"
+          />
+          @if (submitted() && !code().trim()) {
+            <p class="text-xs text-red-500">Le code est requis.</p>
+          }
+        </div>
+
+        <!-- Type -->
+        <div class="space-y-1">
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Type <span class="text-red-500">*</span>
+          </label>
+          <select
+            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#1a5c38] focus:ring-1 focus:ring-[#1a5c38]"
+            [ngModel]="typeDocument()" name="typeDocument"
+            (ngModelChange)="typeDocument.set($event)"
+          >
+            @for (t of typesDocument; track t.value) {
+              <option [value]="t.value">{{ t.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Titre -->
+        <div class="space-y-1 sm:col-span-2">
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Titre <span class="text-red-500">*</span>
+          </label>
+          <input type="text" placeholder="Intitulé complet du document"
+            class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-[#1a5c38] focus:ring-1 focus:ring-[#1a5c38]"
+            [class.border-red-400]="submitted() && !titre().trim()"
+            [class.border-slate-200]="!(submitted() && !titre().trim())"
+            [ngModel]="titre()" name="titre"
+            (ngModelChange)="titre.set($event)"
+          />
+          @if (submitted() && !titre().trim()) {
+            <p class="text-xs text-red-500">Le titre est requis.</p>
+          }
+        </div>
+
+        <!-- Description -->
+        <div class="space-y-1 sm:col-span-2">
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Description</label>
+          <textarea rows="3" placeholder="Description ou objet du document..."
+            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#1a5c38] focus:ring-1 focus:ring-[#1a5c38] resize-none"
+            [ngModel]="description()" name="description"
+            (ngModelChange)="description.set($event)"
+          ></textarea>
+        </div>
+
+        <!-- Processus -->
+        <div class="space-y-1 sm:col-span-2">
+          <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Processus associé</label>
+          <select
+            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#1a5c38] focus:ring-1 focus:ring-[#1a5c38]"
+            [ngModel]="processusId()" name="processusId"
+            (ngModelChange)="processusId.set($event)"
+          >
+            <option value="">— Aucun —</option>
+            @for (p of processusList(); track p.id) {
+              <option [value]="p.id">{{ p.code }} — {{ p.nom }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Actif (edition only) -->
+        @if (isEdit()) {
+          <div class="flex items-center gap-3 sm:col-span-2">
+            <input type="checkbox" id="actif"
+              class="h-4 w-4 rounded border-slate-300 accent-[#1a5c38]"
+              [ngModel]="actif()" name="actif"
+              (ngModelChange)="actif.set($event)"
+            />
+            <label for="actif" class="text-sm text-slate-700">Document actif</label>
+          </div>
+        }
+
+      </div>
+    </div>
+
+    <!-- Section: Première version (création uniquement) -->
+    @if (!isEdit()) {
+      <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div class="border-b border-slate-100 px-6 py-4">
+          <h2 class="font-semibold text-slate-700">Première version</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-5 px-6 py-5 sm:grid-cols-2">
+
+          <!-- Numéro de version -->
+          <div class="space-y-1">
+            <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Numéro de version <span class="text-red-500">*</span>
+            </label>
+            <input type="text" placeholder="ex: v1.0"
+              class="w-full rounded-lg border px-3 py-2 text-sm font-mono outline-none focus:border-[#1a5c38] focus:ring-1 focus:ring-[#1a5c38]"
+              [class.border-red-400]="submitted() && !numeroVersion().trim()"
+              [class.border-slate-200]="!(submitted() && !numeroVersion().trim())"
+              [ngModel]="numeroVersion()" name="numeroVersion"
+              (ngModelChange)="numeroVersion.set($event)"
+            />
+            <p class="text-xs text-slate-400">Format : v1.0, v1.1, v2.0...</p>
+            @if (submitted() && !numeroVersion().trim()) {
+              <p class="text-xs text-red-500">Le numéro de version est requis.</p>
+            }
+          </div>
+
+          <!-- Chemin fichier -->
+          <div class="space-y-1">
+            <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Chemin / URL fichier</label>
+            <input type="text" placeholder="/docs/DOC-001-v1.0.pdf"
+              class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#1a5c38] focus:ring-1 focus:ring-[#1a5c38]"
+              [ngModel]="fichierPath()" name="fichierPath"
+              (ngModelChange)="fichierPath.set($event)"
+            />
+          </div>
+
+          <!-- Commentaire -->
+          <div class="space-y-1 sm:col-span-2">
+            <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Commentaire de révision</label>
+            <textarea rows="2" placeholder="Notes sur cette première version..."
+              class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#1a5c38] focus:ring-1 focus:ring-[#1a5c38] resize-none"
+              [ngModel]="commentaireRevision()" name="commentaireRevision"
+              (ngModelChange)="commentaireRevision.set($event)"
+            ></textarea>
+          </div>
+
+        </div>
+      </div>
+    }
+
+    <!-- Actions -->
+    <div class="flex justify-end gap-3">
+      <button type="button"
+        class="rounded-lg border border-slate-200 px-5 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50"
+        (click)="cancel()">
+        Annuler
+      </button>
+      <button type="submit"
+        class="rounded-lg bg-[#1a5c38] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a4f] disabled:opacity-50 flex items-center gap-2"
+        [disabled]="loading()">
+        @if (loading()) {
+          <span class="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+        }
+        {{ isEdit() ? 'Enregistrer' : 'Créer le document' }}
+      </button>
+    </div>
+
+  </form>
+</section>
