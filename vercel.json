@@ -1,6 +1,9 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/front",
+  "outputDirectory": "dist/front/browser",
   "installCommand": "npm install",
-  "framework": "angular"
+  "framework": "angular",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
