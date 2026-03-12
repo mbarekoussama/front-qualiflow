@@ -22,7 +22,9 @@
             "allowedCommonJsDependencies": [
               "jspdf",
               "canvg",
-              "core-js"
+              "core-js",
+              "raf",
+              "rgbcolor"
             ],
             "assets": [
               {
