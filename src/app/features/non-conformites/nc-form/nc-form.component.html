@@ -45,6 +45,7 @@
           <div>
             <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Processus concerné *</label>
             <select formControlName="processusId"
+              title="Processus concerné"
               class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
               @for (p of processusOptions(); track p.id) {
                 <option [value]="p.id">{{ p.code }} – {{ p.nom }}</option>
@@ -54,6 +55,7 @@
           <div>
             <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Source *</label>
             <select formControlName="source"
+              title="Source"
               class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
               @for (src of sources; track src.value) {
                 <option [value]="src.value">{{ src.label }}</option>
@@ -63,6 +65,7 @@
           <div>
             <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Gravité *</label>
             <select formControlName="gravite"
+              title="Gravité"
               class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
               @for (g of gravites; track g.value) {
                 <option [value]="g.value">{{ g.label }}</option>
@@ -72,6 +75,7 @@
           <div>
             <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Responsable traitement *</label>
             <select formControlName="responsableTraitementId"
+              title="Responsable du traitement"
               class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
               @for (r of responsables(); track r.id) {
                 <option [value]="r.id">{{ r.prenom }} {{ r.nom }}</option>
@@ -84,6 +88,7 @@
           <div>
             <label class="text-xs uppercase tracking-[0.2em] text-slate-400">Date d'échéance *</label>
             <input formControlName="dateEcheance" type="date"
+              title="Date d'échéance"
               class="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm" />
             @if (formSubmitted() && form.controls.dateEcheance.invalid) {
               <p class="mt-1 text-xs text-red-600">La date d'échéance est requise.</p>

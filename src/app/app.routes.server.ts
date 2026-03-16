@@ -10,5 +10,7 @@ export const serverRoutes: ServerRoute[] = [
   { path: 'documents/:id',          renderMode: RenderMode.Server },
   { path: 'documents/:id/edition',  renderMode: RenderMode.Server },
   { path: 'non-conformites/:id',    renderMode: RenderMode.Server },
+  { path: 'indicateurs/:id',        renderMode: RenderMode.Server },
+  { path: 'indicateurs/:id/edition', renderMode: RenderMode.Server },
   { path: '**', renderMode: RenderMode.Prerender }
 ];

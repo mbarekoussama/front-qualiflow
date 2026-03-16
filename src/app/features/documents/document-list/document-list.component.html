@@ -12,13 +12,7 @@
     </div>
   </div>
 
-  <!-- Loading -->
-  @if (svc.loading()) {
-    <div class="flex items-center justify-center py-10 text-sm text-slate-400">
-      <span class="h-5 w-5 animate-spin rounded-full border-2 border-[#1a5c38] border-t-transparent mr-2"></span>
-      Chargement...
-    </div>
-  }
+
 
   <!-- Filters -->
   <div class="flex flex-wrap gap-3 sm:items-center">
@@ -50,6 +44,7 @@
     </div>
 
     <select
+      title="Filtrer par statut"
       class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
       [value]="statutFilter()"
       (change)="updateStatutFilter($any($event.target).value)"
@@ -61,6 +56,8 @@
       <option value="OBSOLETE">Obsolète</option>
     </select>
   </div>
+
+  
 
   <!-- Table -->
   <div class="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
@@ -129,4 +126,11 @@
       </table>
     </div>
   </div>
+    <!-- Loading -->
+  @if (svc.loading()) {
+    <div class="flex items-center justify-center py-10 text-sm text-slate-400">
+      <span class="h-5 w-5 animate-spin rounded-full border-2 border-[#1a5c38] border-t-transparent mr-2"></span>
+      Chargement...
+    </div>
+  }
 </section>

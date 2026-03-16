@@ -14,25 +14,80 @@
           <option [value]="opt">{{ opt === 'Tous' ? 'Tous les processus' : opt }}</option>
         }
       </select>
-      <button class="rounded-md bg-[#1a5c38] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a4f]">
+      <a
+        routerLink="/indicateurs/nouveau"
+        class="rounded-md bg-[#1a5c38] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a4f]"
+      >
         + Nouvel indicateur
-      </button>
+      </a>
     </div>
   </div>
 
-  <!-- Cards grid -->
-  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-    @for (ind of filteredIndicateurs(); track ind.id) {
-      <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-5 space-y-4">
+  @if (error()) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ error() }}
+    </div>
+  }
+
+  <!-- Summary -->
+  <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-xs text-slate-400">Indicateurs</div>
+      <div class="text-2xl font-bold text-slate-800">{{ total() }}</div>
+    </div>
+    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-xs text-slate-400">Atteints</div>
+      <div class="text-2xl font-bold text-emerald-600">{{ countAtteints() }}</div>
+    </div>
+    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-xs text-slate-400">En alerte</div>
+      <div class="text-2xl font-bold text-red-600">{{ countAlerte() }}</div>
+    </div>
+    <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-xs text-slate-400">Performance moyenne</div>
+      <div class="text-2xl font-bold text-slate-700">{{ performanceMoyenne() }}%</div>
+    </div>
+  </div>
+
+  @if (filteredIndicateurs().length === 0) {
+    <div class="rounded-lg border border-slate-200 bg-white px-4 py-6 text-sm text-slate-500">
+      Aucun indicateur trouvé.
+    </div>
+  } @else {
+    <!-- Cards grid -->
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      @for (ind of filteredIndicateurs(); track ind.id) {
+        <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-5 space-y-4">
         <!-- Header -->
         <div class="flex items-start justify-between">
           <div>
-            <span class="font-mono text-xs font-semibold text-slate-400">{{ ind.id }}</span>
-            <h3 class="text-sm font-semibold text-slate-800 mt-0.5">{{ ind.intitule }}</h3>
+            <span class="font-mono text-xs font-semibold text-slate-400">{{ ind.code }}</span>
+            <h3 class="text-sm font-semibold text-slate-800 mt-0.5">{{ ind.nom }}</h3>
           </div>
-          <span class="text-lg font-bold" [ngClass]="tendanceClass(ind.tendance)" [title]="ind.tendance">
-            {{ tendanceIcon(ind.tendance) }}
-          </span>
+          <div class="flex items-center gap-2">
+            <span class="text-lg font-bold" [ngClass]="tendanceClass(tendance(ind))" [title]="tendance(ind)">
+              {{ tendanceIcon(tendance(ind)) }}
+            </span>
+            <a
+              [routerLink]="['/indicateurs', ind.id]"
+              class="text-xs text-slate-500 hover:text-slate-700"
+            >
+              Voir
+            </a>
+            <a
+              [routerLink]="['/indicateurs', ind.id, 'edition']"
+              class="text-xs text-slate-500 hover:text-slate-700"
+            >
+              Modifier
+            </a>
+            <button
+              type="button"
+              (click)="supprimer(ind.id)"
+              class="text-xs text-red-500 hover:text-red-700"
+            >
+              Supprimer
+            </button>
+          </div>
         </div>
 
         <!-- Current value vs target -->
@@ -49,7 +104,7 @@
           </div>
           <div class="text-right">
             <div class="text-xs text-slate-400">Cible</div>
-            <div class="text-lg font-semibold text-slate-600">{{ ind.cible }} {{ ind.unite }}</div>
+            <div class="text-lg font-semibold text-slate-600">{{ ind.valeurCible }} {{ ind.unite }}</div>
           </div>
         </div>
 
@@ -68,25 +123,25 @@
           </div>
         </div>
 
-        <!-- Mini sparkline (last 4 values) -->
+        <!-- Mini sparkline (last 6 values) -->
         @if (ind.valeurs.length > 1) {
           <div class="flex items-end gap-1 h-8">
             @for (v of ind.valeurs.slice(-6); track $index) {
               <div class="flex-1 rounded-t"
-                [ngClass]="v.valeur >= ind.cible ? 'bg-green-400' : v.valeur >= ind.seuilAlerte ? 'bg-amber-400' : 'bg-red-400'"
-                [style.height.%]="barHeight(v.valeur, ind.cible)"
-                [title]="v.periode + ': ' + v.valeur + ' ' + ind.unite">
+                [ngClass]="v.valeur >= ind.valeurCible ? 'bg-green-400' : v.valeur >= ind.seuilAlerte ? 'bg-amber-400' : 'bg-red-400'"
+                [style.height.%]="barHeight(v.valeur, ind.valeurCible)"
+                [title]="v.periode + ': ' + v.valeur + ' ' + (ind.unite ?? '')">
               </div>
             }
           </div>
           <div class="text-xs text-slate-400 -mt-1">
-            {{ ind.valeurs[ind.valeurs.length - 1].periode }} · {{ ind.frequence }}
+            {{ ind.valeurs[ind.valeurs.length - 1].periode }} · {{ frequenceLabel[ind.frequenceMesure] }}
           </div>
         }
 
         <!-- Footer -->
         <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-          <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-500">{{ ind.processus }}</span>
+          <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-500">{{ ind.processusNom }}</span>
           <div class="flex items-center gap-2">
             <span class="h-6 w-6 rounded-full text-white flex items-center justify-center text-[10px] font-semibold"
               [style.backgroundColor]="ind.responsable.couleur">
@@ -94,7 +149,8 @@
             </span>
           </div>
         </div>
-      </div>
-    }
-  </div>
+        </div>
+      }
+    </div>
+  }
 </section>

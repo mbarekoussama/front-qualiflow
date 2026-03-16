@@ -163,7 +163,7 @@ export class PdfService {
     // ── Instructions ──────────────────────────────────────
     if (p.instructions.length > 0) {
       y = this.section(doc, 'Instructions', y);
-      autoTable(doc, {
+      (autoTable as any)(doc, {
         startY: y,
         margin: { left: 8, right: 8 },
         head: [['Code', 'Titre', 'Description', 'Statut', 'Créée le']],
@@ -236,7 +236,7 @@ export class PdfService {
     // ── Versions ──────────────────────────────────────────
     if (d.versions && d.versions.length > 0) {
       y = this.section(doc, 'Historique des versions', y);
-      autoTable(doc, {
+      (autoTable as any)(doc, {
         startY: y,
         margin: { left: 8, right: 8 },
         head: [['Version', 'Statut', 'Établi par', 'Commentaire', 'Date']],

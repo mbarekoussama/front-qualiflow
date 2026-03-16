@@ -44,6 +44,7 @@
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Type *</label>
           <select name="type"
+            title="Type de processus"
             class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B5E20]/30"
             [ngModel]="type()" (ngModelChange)="type.set($event)">
             <option value="PILOTAGE">Pilotage</option>
@@ -85,6 +86,7 @@
           <div>
             <label class="block text-xs font-medium text-slate-600 mb-1">Pilote *</label>
             <select name="piloteId"
+              title="Pilote du processus"
               class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B5E20]/30"
               [class.border-red-400]="submitted() && !piloteId()"
               [ngModel]="piloteId()" (ngModelChange)="piloteId.set($event)">
@@ -102,6 +104,7 @@
             <div>
               <label class="block text-xs font-medium text-slate-600 mb-1">Statut</label>
               <select name="statut"
+                title="Statut"
                 class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
                 [ngModel]="statut()" (ngModelChange)="statut.set($event)">
                 <option value="ACTIF">ACTIF</option>

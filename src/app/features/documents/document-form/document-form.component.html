@@ -55,6 +55,7 @@
             Type <span class="text-red-500">*</span>
           </label>
           <select
+            title="type"
             class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#1a5c38] focus:ring-1 focus:ring-[#1a5c38]"
             [ngModel]="typeDocument()" name="typeDocument"
             (ngModelChange)="typeDocument.set($event)"
@@ -96,6 +97,7 @@
         <div class="space-y-1 sm:col-span-2">
           <label class="text-xs font-semibold uppercase tracking-wide text-slate-500">Processus associé</label>
           <select
+              title="Processus associé"
             class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-[#1a5c38] focus:ring-1 focus:ring-[#1a5c38]"
             [ngModel]="processusId()" name="processusId"
             (ngModelChange)="processusId.set($event)"

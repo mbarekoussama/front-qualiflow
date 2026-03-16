@@ -12,8 +12,10 @@
     "isolatedModules": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "target": "ES2022",
-    "module": "preserve"
+    "moduleResolution": "nodenext",
+    "allowSyntheticDefaultImports": true,
+    "target": "ESNext",
+    "module": "NodeNext"
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

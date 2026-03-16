@@ -4,10 +4,14 @@
       <h1 class="text-2xl font-semibold">Actions correctives</h1>
       <p class="text-sm text-slate-500">Suivi des actions correctives et préventives</p>
     </div>
-    <button class="rounded-md bg-[#1a5c38] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#2d7a4f] self-start lg:self-auto">
-      + Nouvelle action
-    </button>
   </div>
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+      {{ error() }}
+    </div>
+  }
 
   <!-- KPI -->
   <div class="grid gap-4 md:grid-cols-3">
@@ -28,6 +32,7 @@
   <!-- Filters -->
   <div class="flex flex-wrap gap-3 sm:items-center">
     <select
+      title="Filtrer par processus"
       class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
       [value]="ncFilter()"
       (change)="updateNcFilter($any($event.target).value)"
@@ -37,16 +42,16 @@
       }
     </select>
     <select
+      title="Filtrer par type"
       class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
       [value]="statutFilter()"
       (change)="updateStatutFilter($any($event.target).value)"
     >
       <option value="Tous">Tous les statuts</option>
-      <option value="Planifiée">Planifiée</option>
-      <option value="En cours">En cours</option>
-      <option value="Réalisée">Réalisée</option>
-      <option value="Efficace">Efficace</option>
-      <option value="Inefficace">Inefficace</option>
+      <option value="PLANIFIEE">Planifiée</option>
+      <option value="EN_COURS">En cours</option>
+      <option value="REALISEE">Réalisée</option>
+      <option value="VERIFIEE">Efficace / Vérifiée</option>
     </select>
   </div>
 
@@ -68,40 +73,38 @@
       <tbody class="divide-y divide-slate-100">
         @for (ac of filteredActions(); track ac.id) {
           <tr class="hover:bg-slate-50 transition text-slate-700">
-            <td class="px-5 py-3 font-mono text-xs font-semibold text-slate-600">{{ ac.id }}</td>
+            <td class="px-5 py-3 font-mono text-xs font-semibold text-slate-600">
+              <a [routerLink]="['/actions-correctives', ac.id]"
+                 class="hover:text-[#1a5c38] hover:underline">
+                {{ ac.id | slice:0:8 }}…
+              </a>
+            </td>
             <td class="px-5 py-3">
-              <a [routerLink]="['/non-conformites', ac.nonConformite]"
+              <a [routerLink]="['/non-conformites', ac.nonConformiteId]"
                 class="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-700 hover:bg-red-100">
-                {{ ac.nonConformite }}
+                {{ ac.ncReference }}
               </a>
             </td>
             <td class="px-5 py-3">
               <div class="max-w-sm text-slate-800">{{ ac.description }}</div>
-              @if (ac.commentaireEfficacite) {
-                <div class="text-xs text-green-700 mt-1 italic">✓ {{ ac.commentaireEfficacite }}</div>
-              }
             </td>
             <td class="px-5 py-3">
               <div class="flex items-center gap-2">
                 <span class="h-7 w-7 rounded-full text-white flex items-center justify-center text-[11px] font-semibold shrink-0"
-                  [style.backgroundColor]="ac.responsable.couleur">
-                  {{ ac.responsable.initiales }}
+                  [style.backgroundColor]="ac.responsableCouleur">
+                  {{ ac.responsableInitiales }}
                 </span>
-                <span class="text-xs text-slate-600">{{ ac.responsable.prenom }} {{ ac.responsable.nom }}</span>
+                <span class="text-xs text-slate-600">{{ ac.responsableNom }}</span>
               </div>
             </td>
-            <td class="px-5 py-3 text-xs text-slate-600">{{ ac.dateEcheance | date: 'dd/MM/yyyy' }}</td>
+            <td class="px-5 py-3 text-xs text-slate-600">{{ ac.dateEcheance | date: 'dd/MM/yyyy' : 'UTC' }}</td>
             <td class="px-5 py-3">
               <app-status-badge [status]="ac.statut" />
             </td>
             <td class="px-5 py-3 text-xs text-center">
-              @if (ac.preuves.length > 0) {
-                <span class="rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-xs font-semibold">
-                  {{ ac.preuves.length }}
-                </span>
-              } @else {
-                <span class="text-slate-400">—</span>
-              }
+              @if (ac.dateRealisation) {
+                <span class="rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-xs font-semibold">✓</span>
+              } @else { <span class="text-slate-400">—</span> }
             </td>
           </tr>
         }
@@ -116,4 +119,12 @@
       </table>
     </div>
   </div>
+  
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="flex justify-center py-10">
+      <div class="h-8 w-8 animate-spin rounded-full border-4 border-[#1a5c38] border-t-transparent"></div>
+    </div>
+  }
+
 </section>

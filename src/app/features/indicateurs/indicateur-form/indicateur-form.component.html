@@ -1,0 +1,162 @@
+<section class="mx-auto max-w-4xl space-y-6 py-2">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-800">
+        {{ isEdit() ? 'Modifier l\'indicateur' : 'Nouvel indicateur' }}
+      </h1>
+      <p class="mt-1 text-sm text-slate-500">Définir la formule, la fréquence et la cible</p>
+    </div>
+    <button type="button" (click)="annuler()"
+      class="rounded-md border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50">
+      Annuler
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ error() }}
+    </div>
+  }
+
+  <form (ngSubmit)="submit()" class="space-y-6">
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-800">1. Identification</h2>
+      </div>
+      <div class="grid gap-4 p-5 md:grid-cols-2">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Code *</label>
+          <input type="text" placeholder="IND-01"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [class.border-red-400]="submitted() && !code().trim()"
+            [ngModel]="code()" (ngModelChange)="code.set($event)" name="code" />
+          @if (submitted() && !code().trim()) {
+            <p class="mt-1 text-xs text-red-600">Requis</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Nom *</label>
+          <input type="text" placeholder="Taux de conformité"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [class.border-red-400]="submitted() && !nom().trim()"
+            [ngModel]="nom()" (ngModelChange)="nom.set($event)" name="nom" />
+          @if (submitted() && !nom().trim()) {
+            <p class="mt-1 text-xs text-red-600">Requis</p>
+          }
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-xs font-medium text-slate-600 mb-1">Processus *</label>
+          <select
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [class.border-red-400]="submitted() && !processusId()"
+            [ngModel]="processusId()" (ngModelChange)="processusId.set($event)" name="processusId">
+            <option value="">Sélectionner un processus</option>
+            @for (p of processusOptions(); track p.id) {
+              <option [value]="p.id">{{ p.code }} — {{ p.nom }}</option>
+            }
+          </select>
+          @if (submitted() && !processusId()) {
+            <p class="mt-1 text-xs text-red-600">Requis</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-800">2. Paramètres KPI</h2>
+      </div>
+      <div class="grid gap-4 p-5 md:grid-cols-2">
+        <div class="md:col-span-2">
+          <label class="block text-xs font-medium text-slate-600 mb-1">Formule / Méthode de calcul</label>
+          <textarea rows="3" placeholder="Ex. (NC clôturées / Total NC) × 100"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [ngModel]="methodeCalcul()" (ngModelChange)="methodeCalcul.set($event)" name="methodeCalcul">
+          </textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Unité</label>
+          <input type="text" placeholder="%" class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [ngModel]="unite()" (ngModelChange)="unite.set($event)" name="unite" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Fréquence *</label>
+          <select
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [ngModel]="frequenceMesure()" (ngModelChange)="frequenceMesure.set($event)" name="frequenceMesure">
+            @for (f of frequences; track f.value) {
+              <option [value]="f.value">{{ f.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Cible *</label>
+          <input type="number" min="0"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [ngModel]="valeurCible()" (ngModelChange)="valeurCible.set(+$event)" name="valeurCible" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Seuil d'alerte *</label>
+          <input type="number" min="0"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [ngModel]="seuilAlerte()" (ngModelChange)="seuilAlerte.set(+$event)" name="seuilAlerte" />
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-800">3. Responsabilité</h2>
+      </div>
+      <div class="grid gap-4 p-5 md:grid-cols-2">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Responsable *</label>
+          <select
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [class.border-red-400]="submitted() && !responsableId()"
+            [ngModel]="responsableId()" (ngModelChange)="responsableId.set($event)" name="responsableId">
+            <option value="">Sélectionner un responsable</option>
+            @for (r of responsables(); track r.id) {
+              <option [value]="r.id">{{ r.prenom }} {{ r.nom }}</option>
+            }
+          </select>
+          @if (submitted() && !responsableId()) {
+            <p class="mt-1 text-xs text-red-600">Requis</p>
+          }
+        </div>
+
+        @if (isEdit()) {
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Statut</label>
+            <select
+              class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+              [ngModel]="statut()" (ngModelChange)="statut.set($event)" name="statut">
+              @for (s of statuts; track s.value) {
+                <option [value]="s.value">{{ s.label }}</option>
+              }
+            </select>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+      <button type="button" (click)="annuler()"
+        class="rounded-md border border-slate-200 px-5 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+        Annuler
+      </button>
+      <button type="submit"
+        [disabled]="loading()"
+        class="rounded-md bg-[#1B5E20] px-6 py-2 text-sm font-semibold text-white hover:bg-[#2d7a4f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        @if (loading()) { Enregistrement }
+        @else { {{ isEdit() ? 'Enregistrer les modifications' : 'Créer l\'indicateur' }} }
+      </button>
+    </div>
+  </form>
+</section>

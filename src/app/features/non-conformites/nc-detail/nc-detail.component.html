@@ -150,7 +150,63 @@
 
     <!-- Actions correctives tab -->
     @if (activeTab() === 'actions') {
-      <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-5">
+      <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-5 space-y-5">
+        <form [formGroup]="actionForm" (ngSubmit)="ajouterAction()" class="grid gap-3 md:grid-cols-2">
+          <div>
+            <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Type</label>
+            <input
+              type="text"
+              formControlName="type"
+              class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[#1a5c38] focus:outline-none focus:ring-2 focus:ring-[#1a5c38]/20"
+              placeholder="Ex: Corrective"
+            />
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Responsable</label>
+            <select
+              title="Responsable"
+              formControlName="responsableId"
+              class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[#1a5c38] focus:outline-none focus:ring-2 focus:ring-[#1a5c38]/20"
+            >
+              @for (u of responsables(); track u.id) {
+                <option [value]="u.id">{{ u.prenom }} {{ u.nom }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Description</label>
+            <textarea
+              rows="3"
+              formControlName="description"
+              class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[#1a5c38] focus:outline-none focus:ring-2 focus:ring-[#1a5c38]/20"
+              placeholder="Décrire l’action corrective"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Date d’échéance</label>
+            <input
+              title="Date d'échéance"
+              type="date"
+              formControlName="dateEcheance"
+              class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-[#1a5c38] focus:outline-none focus:ring-2 focus:ring-[#1a5c38]/20"
+            />
+          </div>
+
+          <div class="flex items-end justify-end">
+            <button
+              type="submit"
+              [disabled]="actionLoading()"
+              class="rounded-md bg-[#1a5c38] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#154a2d] disabled:opacity-60"
+            >
+              {{ actionLoading() ? 'Ajout…' : 'Ajouter action corrective' }}
+            </button>
+          </div>
+        </form>
+
+        <div class="border-t border-slate-200"></div>
+
         @if (nc()!.actionsCorrectives.length === 0) {
           <div class="text-center py-8 text-sm text-slate-400">Aucune action corrective définie.</div>
         } @else {
@@ -179,6 +235,18 @@
                   </span>
                   <span class="text-xs text-slate-500">{{ ac.responsable.prenom }} {{ ac.responsable.nom }}</span>
                 </div>
+                @if (nextActionStatut(ac.statut); as next) {
+                  <div class="mt-3 flex justify-end">
+                    <button
+                      type="button"
+                      [disabled]="actionLoading()"
+                      (click)="avancerAction(ac.id, ac.statut)"
+                      class="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                    >
+                      Passer à {{ STATUT_ACTION_LABEL[next] }}
+                    </button>
+                  </div>
+                }
               </div>
             }
           </div>

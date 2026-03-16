@@ -21,6 +21,7 @@ import {
   CreateNcDto,
   AddActionCorrectiveDto,
   UpdateNcStatutDto,
+  UpdateActionCorrectiveStatutDto,
 } from '../../shared/models/non-conformite.model';
 
 export interface PagedResult<T> {
@@ -163,6 +164,22 @@ export class NonConformiteService {
     } catch (e: any) {
       this.error.set(e?.error?.errors?.[0]?.message ?? e?.message ?? 'Erreur.');
       return null;
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async mettreAJourStatutAction(dto: UpdateActionCorrectiveStatutDto): Promise<boolean> {
+    this.loading.set(true);
+    this.error.set(null);
+    try {
+      await firstValueFrom(
+        this.http.patch(`${this.url}/actions/${dto.actionId}/statut`, dto)
+      );
+      return true;
+    } catch (e: any) {
+      this.error.set(e?.error?.errors?.[0]?.message ?? e?.message ?? 'Erreur de mise à jour du statut de l\'action.');
+      return false;
     } finally {
       this.loading.set(false);
     }

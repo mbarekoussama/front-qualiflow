@@ -1,0 +1,186 @@
+<section class="space-y-6">
+  <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-800">Détail de l'indicateur</h1>
+      <p class="text-sm text-slate-500">Suivi des valeurs périodiques et performance</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <a routerLink="/indicateurs"
+        class="rounded-md border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50">
+        Retour
+      </a>
+      @if (indicateur()) {
+        <a [routerLink]="['/indicateurs', indicateur()!.id, 'edition']"
+          class="rounded-md border border-slate-200 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50">
+          Modifier
+        </a>
+        <button type="button" (click)="supprimer()"
+          class="rounded-md bg-red-50 px-4 py-2 text-sm text-red-700 hover:bg-red-100">
+          Supprimer
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+      {{ error() }}
+    </div>
+  }
+
+  @if (indicateur()) {
+    <div class="grid gap-4 md:grid-cols-4">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="text-xs text-slate-400">Valeur actuelle</div>
+        <div class="text-2xl font-bold text-slate-800">
+          @if (latestValeur() !== null) {
+            {{ latestValeur() }} {{ indicateur()!.unite }}
+          } @else { N/A }
+        </div>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="text-xs text-slate-400">Cible</div>
+        <div class="text-2xl font-bold text-slate-700">
+          {{ indicateur()!.valeurCible }} {{ indicateur()!.unite }}
+        </div>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="text-xs text-slate-400">Seuil d'alerte</div>
+        <div class="text-2xl font-bold text-red-600">
+          {{ indicateur()!.seuilAlerte }} {{ indicateur()!.unite }}
+        </div>
+      </div>
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="text-xs text-slate-400">Performance</div>
+        <div class="text-2xl font-bold text-emerald-600">
+          {{ performance() }}%
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-800">Informations générales</h2>
+      </div>
+      <div class="grid gap-4 p-5 md:grid-cols-2">
+        <div>
+          <div class="text-xs text-slate-400">Code</div>
+          <div class="text-sm font-semibold text-slate-700">{{ indicateur()!.code }}</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">Nom</div>
+          <div class="text-sm font-semibold text-slate-700">{{ indicateur()!.nom }}</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">Processus</div>
+          <div class="text-sm font-semibold text-slate-700">{{ indicateur()!.processusNom }}</div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">Fréquence</div>
+          <div class="text-sm font-semibold text-slate-700">
+            {{ frequenceLabel[indicateur()!.frequenceMesure] }}
+          </div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">Responsable</div>
+          <div class="text-sm font-semibold text-slate-700">
+            {{ indicateur()!.responsable.prenom }} {{ indicateur()!.responsable.nom }}
+          </div>
+        </div>
+        <div>
+          <div class="text-xs text-slate-400">Statut</div>
+          <div class="text-sm font-semibold text-slate-700">{{ indicateur()!.statut }}</div>
+        </div>
+        <div class="md:col-span-2">
+          <div class="text-xs text-slate-400">Formule</div>
+          <div class="text-sm text-slate-600">
+            {{ indicateur()!.methodeCalcul || '—' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-800">Valeurs périodiques</h2>
+      </div>
+      <div class="p-5 overflow-auto">
+        @if (indicateur()!.valeurs.length === 0) {
+          <div class="text-sm text-slate-400">Aucune valeur enregistrée.</div>
+        } @else {
+          <table class="w-full text-sm">
+            <thead class="text-left text-xs text-slate-400">
+              <tr>
+                <th class="py-2">Période</th>
+                <th class="py-2">Valeur</th>
+                <th class="py-2">Date</th>
+                <th class="py-2">Saisi par</th>
+                <th class="py-2">Commentaire</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (v of indicateur()!.valeurs; track v.id) {
+                <tr class="border-t border-slate-100">
+                  <td class="py-2">{{ v.periode }}</td>
+                  <td class="py-2 font-semibold">{{ v.valeur }} {{ indicateur()!.unite }}</td>
+                  <td class="py-2">{{ v.dateMesure | date: 'yyyy-MM-dd' }}</td>
+                  <td class="py-2">{{ v.saisiePar.prenom }} {{ v.saisiePar.nom }}</td>
+                  <td class="py-2 text-slate-500">{{ v.commentaire || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div class="border-b border-slate-100 px-5 py-4">
+        <h2 class="text-base font-semibold text-slate-800">Ajouter une valeur</h2>
+      </div>
+      <div class="grid gap-4 p-5 md:grid-cols-2">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Période *</label>
+          <input type="text" placeholder="2026-01"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [class.border-red-400]="valeurSubmitted() && !periode().trim()"
+            [ngModel]="periode()" (ngModelChange)="periode.set($event)" name="periode" />
+          @if (valeurSubmitted() && !periode().trim()) {
+            <p class="mt-1 text-xs text-red-600">Requis</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Valeur *</label>
+          <input type="number" min="0"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [class.border-red-400]="valeurSubmitted() && valeur() === null"
+            [ngModel]="valeur()" (ngModelChange)="valeur.set($event === '' ? null : +$event)" name="valeur" />
+          @if (valeurSubmitted() && valeur() === null) {
+            <p class="mt-1 text-xs text-red-600">Requis</p>
+          }
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Date de mesure</label>
+          <input type="date"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [ngModel]="dateMesure()" (ngModelChange)="dateMesure.set($event)" name="dateMesure" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Commentaire</label>
+          <input type="text" placeholder="Observations"
+            class="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
+            [ngModel]="commentaire()" (ngModelChange)="commentaire.set($event)" name="commentaire" />
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 px-5 pb-5">
+        <button type="button" (click)="ajouterValeur()"
+          class="rounded-md bg-[#1B5E20] px-5 py-2 text-sm font-semibold text-white hover:bg-[#2d7a4f]">
+          Ajouter la valeur
+        </button>
+      </div>
+    </div>
+  }
+</section>

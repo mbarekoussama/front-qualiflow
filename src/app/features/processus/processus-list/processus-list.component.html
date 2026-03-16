@@ -40,6 +40,7 @@
 
     <!-- Type filter -->
     <select
+      title="Filtrer par type"
       class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm"
       [value]="typeFilter()"
       (change)="setTypeFilter($any($event.target).value)"
@@ -52,6 +53,7 @@
 
     <!-- Statut filter -->
     <select
+      title="Filtrer par statut"
       class="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 shadow-sm"
       [value]="statutFilter()"
       (change)="setStatutFilter($any($event.target).value)"

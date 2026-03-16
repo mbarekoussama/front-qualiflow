@@ -1,0 +1,98 @@
+<section class="space-y-6 max-w-3xl mx-auto">
+
+
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{{ error() }}</div>
+  }
+
+  @if (ac(); as a) {
+    <!-- Header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <a routerLink="/actions-correctives"
+             class="text-sm text-slate-500 hover:text-[#1a5c38]">← Actions correctives</a>
+          <span class="text-slate-300">|</span>
+          <app-status-badge [status]="a.statut" />
+        </div>
+        <h1 class="mt-2 text-xl font-semibold text-slate-800">{{ a.description }}</h1>
+        <p class="text-sm text-slate-500 mt-1">
+          NC parente :
+          <a [routerLink]="['/non-conformites', a.nonConformiteId]"
+             class="font-semibold text-red-700 hover:underline">{{ a.ncReference }}</a>
+          — {{ a.ncDescription | slice:0:80 }}…
+        </p>
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <a [routerLink]="['edition']"
+           class="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 shadow-sm">
+          Modifier
+        </a>
+        <button (click)="supprimer()"
+                class="rounded-md bg-red-50 border border-red-200 px-3 py-1.5 text-sm text-red-700 hover:bg-red-100">
+          Supprimer
+        </button>
+      </div>
+    </div>
+
+    <!-- Info card -->
+    <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-6 grid gap-5 sm:grid-cols-2">
+      <div>
+        <div class="text-xs uppercase tracking-[0.15em] text-slate-400 mb-1">Type</div>
+        <div class="text-sm font-medium text-slate-700">{{ a.type }}</div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-[0.15em] text-slate-400 mb-1">Statut</div>
+        <app-status-badge [status]="a.statut" />
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-[0.15em] text-slate-400 mb-1">Responsable</div>
+        <div class="flex items-center gap-2">
+          <span class="h-7 w-7 rounded-full text-white flex items-center justify-center text-[11px] font-semibold"
+                [style.backgroundColor]="a.responsableCouleur">
+            {{ a.responsableInitiales }}
+          </span>
+          <span class="text-sm text-slate-700">{{ a.responsableNom }}</span>
+        </div>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-[0.15em] text-slate-400 mb-1">Date d'échéance</div>
+        <div class="text-sm text-slate-700">{{ a.dateEcheance | date:'dd/MM/yyyy':'UTC' }}</div>
+      </div>
+      @if (a.dateRealisation) {
+        <div>
+          <div class="text-xs uppercase tracking-[0.15em] text-slate-400 mb-1">Date de réalisation</div>
+          <div class="text-sm text-green-700 font-medium">{{ a.dateRealisation | date:'dd/MM/yyyy':'UTC' }}</div>
+        </div>
+      }
+    </div>
+
+    <!-- Avancer statut -->
+    @if (nextStatut(a.statut); as next) {
+      <div class="bg-[#f0faf4] rounded-lg border border-[#b7eacb] p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div class="text-sm font-semibold text-[#1a5c38]">Faire avancer cette action</div>
+          <div class="text-xs text-slate-500 mt-0.5">
+            Passer le statut à <strong>{{ STATUT_LABELS[next] }}</strong>
+          </div>
+        </div>
+        <button
+          (click)="changerStatut(next)"
+          [disabled]="statutLoading()"
+          class="rounded-md bg-[#1a5c38] px-5 py-2 text-sm font-semibold text-white hover:bg-[#2d7a4f] disabled:opacity-50 transition">
+          {{ statutLoading() ? 'Mise à jour…' : 'Marquer « ' + STATUT_LABELS[next] + ' »' }}
+        </button>
+      </div>
+    }
+  }
+
+    <!-- Loading -->
+  @if (loading()) {
+    <div class="flex justify-center py-16">
+      <div class="h-8 w-8 animate-spin rounded-full border-4 border-[#1a5c38] border-t-transparent"></div>
+    </div>
+  }
+
+</section>

@@ -212,6 +212,11 @@ export interface AddActionCorrectiveDto {
   dateEcheance: string;
 }
 
+export interface UpdateActionCorrectiveStatutDto {
+  actionId: string;
+  nouveauStatut: StatutAction;
+}
+
 export interface AddAnalyseCauseDto {
   ncId: string;
   methodeAnalyse: MethodeAnalyse;

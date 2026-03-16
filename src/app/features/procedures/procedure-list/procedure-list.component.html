@@ -10,6 +10,7 @@
         [value]="searchFilter()"
         (input)="setSearch($any($event.target).value)" />
       <select
+        title="Filtrer par processus"
         class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
         [value]="processusFilter()"
         (change)="setProcessus($any($event.target).value)">
@@ -18,6 +19,7 @@
         }
       </select>
       <select
+        title="Filtrer par statut"
         class="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 sm:w-auto"
         [value]="statutFilter()"
         (change)="setStatut($any($event.target).value)">

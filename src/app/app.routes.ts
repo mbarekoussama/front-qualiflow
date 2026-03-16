@@ -165,6 +165,27 @@ export const routes: Routes = [
             (m) => m.IndicateurListComponent
           )
       },
+      {
+        path: 'indicateurs/nouveau',
+        loadComponent: () =>
+          import('./features/indicateurs/indicateur-form/indicateur-form.component').then(
+            (m) => m.IndicateurFormComponent
+          )
+      },
+      {
+        path: 'indicateurs/:id/edition',
+        loadComponent: () =>
+          import('./features/indicateurs/indicateur-form/indicateur-form.component').then(
+            (m) => m.IndicateurFormComponent
+          )
+      },
+      {
+        path: 'indicateurs/:id',
+        loadComponent: () =>
+          import('./features/indicateurs/indicateur-detail/indicateur-detail.component').then(
+            (m) => m.IndicateurDetailComponent
+          )
+      },
 
       // Tableau de bord KPI
       {
