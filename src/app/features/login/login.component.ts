@@ -32,6 +32,7 @@ export class LoginComponent {
   });
 
   readonly demoAccounts = [
+    { label: 'Admin', email: 'admin@qualiflow.app' },
     { label: 'Responsable Qualité', email: 'a.mansouri@qualiflow.app' },
     { label: 'Pilote', email: 'k.mrad@qualiflow.app' },
     { label: 'Auditeur', email: 's.benali@qualiflow.app' }

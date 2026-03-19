@@ -9,6 +9,7 @@ export interface AuthUser {
   role: RoleUtilisateur;
   couleur: string;
   organisationId: string;
+  avatar?: string;
 }
 
 export interface LoginCredentials {
@@ -21,13 +22,23 @@ export interface RegisterCredentials {
   prenom:           string;
   email:            string;
   password:         string;
+  organisationName: string;
   organisationCode: string;
-  fonction?:        string;
-  role?:            string;
 }
 
 export interface LoginResponse {
   token: string;
   expiresIn: number;
   user: AuthUser;
+}
+
+export interface UpdateProfilePayload {
+  nom: string;
+  prenom: string;
+  email: string;
+}
+
+export interface UpdatePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
 }

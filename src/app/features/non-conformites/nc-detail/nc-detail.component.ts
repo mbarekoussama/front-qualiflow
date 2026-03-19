@@ -9,11 +9,11 @@ import {
   STATUT_ACTION_LABEL,
   METHODE_LABEL,
   StatutAction,
-} from '../../../shared/models/non-conformite.model';
-import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
-import { ProgressBarComponent } from '../../../shared/components/progress-bar/progress-bar.component';
-import { NonConformiteService } from '../../../core/services/non-conformite.service';
-import { AuthService } from '../../../core/auth/auth.service';
+} from '../../../shared/models/non-conformite.model.js';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component.js';
+import { ProgressBarComponent } from '../../../shared/components/progress-bar/progress-bar.component.js';
+import { NonConformiteService } from '../../../core/services/non-conformite.service.js';
+import { AuthService } from '../../../core/auth/auth.service.js';
 
 @Component({
   selector: 'app-nc-detail',

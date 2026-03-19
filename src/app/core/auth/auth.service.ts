@@ -5,9 +5,16 @@ import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 
-import { AuthUser, LoginCredentials, LoginResponse, RegisterCredentials } from './auth.model';
-import { RoleUtilisateur } from '../../shared/models/utilisateur.model';
-import { environment } from '../../../environments/environment';
+import {
+  AuthUser,
+  LoginCredentials,
+  LoginResponse,
+  RegisterCredentials,
+  UpdatePasswordPayload,
+  UpdateProfilePayload
+} from './auth.model.js';
+import { RoleUtilisateur } from '../../shared/models/utilisateur.model.js';
+import { environment } from '../../../environments/environment.js';
 
 const TOKEN_KEY = 'qf_token';
 const USER_KEY  = 'qf_user';
@@ -50,6 +57,29 @@ export class AuthService {
       );
   }
 
+  updateProfile(payload: UpdateProfilePayload): Observable<{ message: string; user: AuthUser }> {
+    return this.http
+      .put<{ message: string; user: AuthUser }>(`${environment.apiUrl}/utilisateurs/me`, payload)
+      .pipe(
+        tap((res) => this.updateCurrentUser(res.user)),
+        catchError((err) => {
+          const msg: string = err?.error?.message ?? err?.message ?? 'Erreur de mise à jour du profil';
+          return throwError(() => new Error(msg));
+        })
+      );
+  }
+
+  updatePassword(payload: UpdatePasswordPayload): Observable<{ message: string }> {
+    return this.http
+      .put<{ message: string }>(`${environment.apiUrl}/utilisateurs/me/password`, payload)
+      .pipe(
+        catchError((err) => {
+          const msg: string = err?.error?.message ?? err?.message ?? 'Erreur de mise à jour du mot de passe';
+          return throwError(() => new Error(msg));
+        })
+      );
+  }
+
   logout(): void {
     this.clearSession();
     this.router.navigate(['/login']);
@@ -61,20 +91,29 @@ export class AuthService {
   }
 
   canCreate(): boolean {
-    return this.hasRole(['Admin', 'Responsable Qualité']);
+    return this.hasRole(['Responsable Qualité']);
   }
 
   canEdit(): boolean {
-    return this.hasRole(['Admin', 'Responsable Qualité', 'Pilote']);
+    return this.hasRole(['Responsable Qualité', 'Pilote']);
   }
 
   canDeclareNC(): boolean {
-    return this.hasRole(['Admin', 'Responsable Qualité', 'Auditeur', 'Pilote']);
+    return this.hasRole(['Responsable Qualité', 'Auditeur', 'Pilote']);
   }
 
   getToken(): string | null {
     if (!isPlatformBrowser(this.platformId)) return null;
     return localStorage.getItem(TOKEN_KEY);
+  }
+
+  updateCurrentUser(next: Partial<AuthUser>): void {
+    const user = this._currentUser();
+    if (!user || !isPlatformBrowser(this.platformId)) return;
+
+    const merged = { ...user, ...next };
+    localStorage.setItem(USER_KEY, JSON.stringify(merged));
+    this._currentUser.set(merged);
   }
 
   private persistSession(user: AuthUser, token: string): void {

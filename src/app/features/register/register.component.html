@@ -62,18 +62,19 @@
           }
         </div>
 
-        <!-- Fonction -->
-        <div>
-          <label class="block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 mb-1.5">
-            Fonction
-          </label>
-          <input formControlName="fonction" type="text" placeholder="Responsable Qualité"
-            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-800 outline-none focus:border-[#1a5c38] focus:ring-2 focus:ring-[#1a5c38]/20 transition"
-          />
-        </div>
-
-        <!-- Code Organisation + Rôle -->
+        <!-- Organisation -->
         <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 mb-1.5">
+              Nom organisation <span class="text-red-500">*</span>
+            </label>
+            <input formControlName="organisationName" type="text" placeholder="Institut QualiFlow"
+              class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-[#1a5c38] focus:ring-2 focus:ring-[#1a5c38]/20 transition"
+            />
+            @if (form.controls.organisationName.invalid && form.controls.organisationName.touched) {
+              <p class="mt-1 text-xs text-red-600">Nom organisation requis.</p>
+            }
+          </div>
           <div>
             <label class="block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 mb-1.5">
               Code organisation <span class="text-red-500">*</span>
@@ -82,21 +83,11 @@
               class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 font-mono outline-none focus:border-[#1a5c38] focus:ring-2 focus:ring-[#1a5c38]/20 transition uppercase"
             />
             @if (form.controls.organisationCode.invalid && form.controls.organisationCode.touched) {
-              <p class="mt-1 text-xs text-red-600">2–10 caractères alphanumériques.</p>
+              <p class="mt-1 text-xs text-red-600">Code 2–10 caractères alphanumériques.</p>
             }
           </div>
-          <div>
-            <label class="block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500 mb-1.5">
-              Rôle
-            </label>
-            <select formControlName="role"
-              title="Rôle de l'utilisateur"
-              class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 outline-none focus:border-[#1a5c38] focus:ring-2 focus:ring-[#1a5c38]/20 transition"
-            >
-              @for (r of roles; track r.value) {
-                <option [value]="r.value">{{ r.label }}</option>
-              }
-            </select>
+          <div class="col-span-2">
+            <p class="mt-1 text-xs text-slate-500">Le rôle est attribué par un administrateur après création du compte.</p>
           </div>
         </div>
 

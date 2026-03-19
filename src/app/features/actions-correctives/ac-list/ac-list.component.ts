@@ -2,10 +2,10 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { StatutAction, STATUT_ACTION_LABELS } from '../../../shared/models/action-corrective.model';
-import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
-import { ActionCorrectiveService } from '../../../core/services/action-corrective.service';
-import { AuthService } from '../../../core/auth/auth.service';
+import { StatutAction, STATUT_ACTION_LABELS } from '../../../shared/models/action-corrective.model.js';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component.js';
+import { ActionCorrectiveService } from '../../../core/services/action-corrective.service.js';
+import { AuthService } from '../../../core/auth/auth.service.js';
 
 @Component({
   selector: 'app-ac-list',
@@ -25,7 +25,7 @@ export class AcListComponent implements OnInit {
   readonly ncFilter     = signal('Tous');
 
   readonly filteredActions = computed(() =>
-    this.svc.items().filter((ac) => {
+    this.svc.items().filter((ac: { statut: string; ncReference: string; }) => {
       const statOk = this.statutFilter() === 'Tous' || ac.statut === this.statutFilter();
       const ncOk   = this.ncFilter()     === 'Tous' || ac.ncReference === this.ncFilter();
       return statOk && ncOk;
@@ -33,7 +33,7 @@ export class AcListComponent implements OnInit {
   );
 
   readonly ncOptions = computed(() => [
-    'Tous', ...new Set(this.svc.items().map((a) => a.ncReference))
+    'Tous', ...new Set(this.svc.items().map((a: { ncReference: any; }) => a.ncReference))
   ]);
 
   readonly countPlanifiees = this.svc.countPlanifiees;

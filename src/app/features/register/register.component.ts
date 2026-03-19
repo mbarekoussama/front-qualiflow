@@ -9,7 +9,6 @@ import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, Validati
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
-import { RoleGlobal } from './register.model';
 
 @Component({
   selector: 'app-register',
@@ -28,21 +27,13 @@ export class RegisterComponent {
   readonly showPassword = signal(false);
   readonly success      = signal(false);
 
-  readonly roles: { label: string; value: RoleGlobal }[] = [
-    { label: 'Utilisateur',          value: 'UTILISATEUR' },
-    { label: 'Auditeur',             value: 'AUDITEUR' },
-    { label: 'Responsable SMQ',      value: 'RESPONSABLE_SMQ' },
-    { label: 'Administrateur',       value: 'ADMIN_ORG' }
-  ];
-
   readonly form = this.fb.nonNullable.group(
     {
       nom:              ['', [Validators.required, Validators.maxLength(60)]],
       prenom:           ['', [Validators.required, Validators.maxLength(60)]],
       email:            ['', [Validators.required, Validators.email]],
-      fonction:         [''],
+      organisationName: ['', [Validators.required, Validators.maxLength(120)]],
       organisationCode: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9]{2,10}$/)]],
-      role:             ['UTILISATEUR' as RoleGlobal],
       password:         ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword:  ['', Validators.required]
     },
@@ -68,9 +59,8 @@ export class RegisterComponent {
       prenom:           v.prenom,
       email:            v.email,
       password:         v.password,
-      organisationCode: v.organisationCode.toUpperCase(),
-      fonction:         v.fonction || undefined,
-      role:             v.role
+      organisationName: v.organisationName.trim(),
+      organisationCode: v.organisationCode.trim().toUpperCase()
     }).subscribe({
       next: () => {
         this.isLoading.set(false);

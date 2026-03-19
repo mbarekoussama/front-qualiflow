@@ -2,6 +2,7 @@
   | 'Admin'
   | 'Responsable Qualité'
   | 'Auditeur'
+  | 'Utilisateur'
   | 'Pilote'
   | 'Lecteur';
 

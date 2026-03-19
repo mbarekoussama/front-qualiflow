@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 
-import { StatutAction, STATUT_ACTION_LABELS } from '../../../shared/models/action-corrective.model';
-import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component';
-import { ActionCorrectiveService } from '../../../core/services/action-corrective.service';
+import { StatutAction, STATUT_ACTION_LABELS } from '../../../shared/models/action-corrective.model.js';
+import { StatusBadgeComponent } from '../../../shared/components/status-badge/status-badge.component.js';
+import { ActionCorrectiveService } from '../../../core/services/action-corrective.service.js';
 
 @Component({
   selector: 'app-ac-detail',

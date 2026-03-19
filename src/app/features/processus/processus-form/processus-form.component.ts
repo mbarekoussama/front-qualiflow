@@ -2,15 +2,15 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
-import { ProcessusService } from '../../../core/services/processus.service';
-import { AuthService } from '../../../core/auth/auth.service';
+import { ProcessusService } from '../../../core/services/processus.service.js';
+import { AuthService } from '../../../core/auth/auth.service.js';
 import {
   CreateProcessusDto,
   StatutProcessus,
   TypeProcessus,
   UpdateProcessusDto
-} from '../../../shared/models/processus.model';
-import { TagInputComponent } from '../../../shared/components/tag-input/tag-input.component';
+} from '../../../shared/models/processus.model.js';
+import { TagInputComponent } from '../../../shared/components/tag-input/tag-input.component.js';
 
 @Component({
   selector: 'app-processus-form',

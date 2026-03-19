@@ -5,10 +5,10 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
-import { ActionCorrectiveService } from '../../../core/services/action-corrective.service';
-import { AuthService } from '../../../core/auth/auth.service';
-import { UtilisateurOptionDto } from '../../../core/services/non-conformite.service';
-import { environment } from '../../../../environments/environment';
+import { ActionCorrectiveService } from '../../../core/services/action-corrective.service.js';
+import { AuthService } from '../../../core/auth/auth.service.js';
+import { UtilisateurOptionDto } from '../../../core/services/non-conformite.service.js';
+import { environment } from '../../../../environments/environment.js';
 
 interface NcOption {
   id: string;
