@@ -1,0 +1,233 @@
+<section class="space-y-6">
+  <div class="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+    <div>
+      <h1 class="text-2xl font-semibold">Paramètres de la plateforme</h1>
+      <p class="text-sm text-slate-500">Configuration globale: notifications, langue, informations plateforme et dashboard.</p>
+    </div>
+
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+      (click)="refresh()"
+    >
+      Actualiser
+    </button>
+  </div>
+
+  @if (error()) {
+    <div class="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-600">
+      {{ error() }}
+    </div>
+  }
+
+  @if (feedback()) {
+    <div class="rounded-md border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+      {{ feedback() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="rounded-md border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+      Chargement des paramètres...
+    </div>
+  }
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-4">
+      <h2 class="text-base font-semibold">Informations plateforme</h2>
+
+      <div>
+        <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Nom de la plateforme</label>
+        <input
+          type="text"
+          placeholder="Nom de la plateforme"
+          class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-emerald-300 focus:ring"
+          [value]="form().platformName"
+          (input)="setTextField('platformName', $any($event.target).value)"
+        />
+      </div>
+
+      <div>
+        <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Description</label>
+        <textarea
+          placeholder="a propos de la plateforme"
+          rows="3"
+          class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-emerald-300 focus:ring"
+          [value]="form().platformDescription ?? ''"
+          (input)="setTextField('platformDescription', $any($event.target).value)"
+        ></textarea>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Langue par défaut</label>
+          <select
+            title="language"
+            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-emerald-300 focus:ring"
+            [value]="form().defaultLanguage"
+            (change)="setTextField('defaultLanguage', $any($event.target).value)"
+          >
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Fuseau horaire</label>
+          <input
+            placeholder="Fuseau horaire"
+            type="text"
+            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-emerald-300 focus:ring"
+            [value]="form().timezone"
+            (input)="setTextField('timezone', $any($event.target).value)"
+          />
+        </div>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Email support</label>
+          <input
+            placeholder="Email support"
+            type="email"
+            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-emerald-300 focus:ring"
+            [value]="form().supportEmail ?? ''"
+            (input)="setTextField('supportEmail', $any($event.target).value)"
+          />
+        </div>
+
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Téléphone support</label>
+          <input
+            placeholder="Téléphone support"
+            type="text"
+            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-emerald-300 focus:ring"
+            [value]="form().supportPhone ?? ''"
+            (input)="setTextField('supportPhone', $any($event.target).value)"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Site web</label>
+        <input
+          placeholder="Site web"
+          type="text"
+          class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-emerald-300 focus:ring"
+          [value]="form().websiteUrl ?? ''"
+          (input)="setTextField('websiteUrl', $any($event.target).value)"
+        />
+      </div>
+
+      <div>
+        <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Logo URL</label>
+        <input  
+          placeholder="Logo URL"
+          type="text"
+          class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-emerald-300 focus:ring"
+          [value]="form().logoUrl ?? ''"
+          (input)="setTextField('logoUrl', $any($event.target).value)"
+        />
+      </div>
+    </div>
+
+    <div class="rounded-lg border border-slate-200 bg-white p-4 space-y-4">
+      <h2 class="text-base font-semibold">Notifications & dashboard</h2>
+
+      <label class="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <span>Activer notifications email</span>
+        <input
+          type="checkbox"
+          [checked]="form().enableEmailNotifications"
+          (change)="setBoolField('enableEmailNotifications', $any($event.target).checked)"
+        />
+      </label>
+
+      <label class="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <span>Activer notifications in-app</span>
+        <input
+          type="checkbox"
+          [checked]="form().enableInAppNotifications"
+          (change)="setBoolField('enableInAppNotifications', $any($event.target).checked)"
+        />
+      </label>
+
+      <label class="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <span>Mode maintenance</span>
+        <input
+          type="checkbox"
+          [checked]="form().enableMaintenanceMode"
+          (change)="setBoolField('enableMaintenanceMode', $any($event.target).checked)"
+        />
+      </label>
+
+      <div class="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Période dashboard</label>
+          <select
+            title="dashboardDefaultPeriod"
+            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-emerald-300 focus:ring"
+            [value]="form().dashboardDefaultPeriod"
+            (change)="setDashboardPeriod($any($event.target).value)"
+          >
+            @for (opt of periodOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label class="mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Auto-refresh (secondes)</label>
+          <input
+            placeholder="Auto-refresh (secondes)"
+            type="number"
+            min="10"
+            max="3600"
+            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none ring-emerald-300 focus:ring"
+            [value]="form().dashboardRefreshIntervalSeconds"
+            (input)="setRefreshInterval($any($event.target).value)"
+          />
+        </div>
+      </div>
+
+      <label class="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <span>Afficher les KPI</span>
+        <input
+          type="checkbox"
+          [checked]="form().dashboardShowKpis"
+          (change)="setBoolField('dashboardShowKpis', $any($event.target).checked)"
+        />
+      </label>
+
+      <label class="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <span>Afficher activités récentes</span>
+        <input
+          type="checkbox"
+          [checked]="form().dashboardShowRecentActivities"
+          (change)="setBoolField('dashboardShowRecentActivities', $any($event.target).checked)"
+        />
+      </label>
+
+      <label class="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2 text-sm">
+        <span>Afficher widget notifications</span>
+        <input
+          type="checkbox"
+          [checked]="form().dashboardShowNotificationsWidget"
+          (change)="setBoolField('dashboardShowNotificationsWidget', $any($event.target).checked)"
+        />
+      </label>
+    </div>
+  </div>
+
+  <div class="flex justify-end">
+    <button
+      type="button"
+      class="rounded-lg bg-[#1a5c38] px-5 py-2 text-sm font-semibold text-white hover:bg-[#2d7a4f] disabled:cursor-not-allowed disabled:opacity-60"
+      [disabled]="saving()"
+      (click)="save()"
+    >
+      {{ saving() ? 'Enregistrement...' : 'Enregistrer les paramètres' }}
+    </button>
+  </div>
+</section>

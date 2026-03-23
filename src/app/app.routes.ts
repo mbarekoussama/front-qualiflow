@@ -237,6 +237,19 @@ export const routes: Routes = [
           import('./features/admin/admin-users/admin-users.component.js').then(
             (m) => m.AdminUsersComponent
           )
+      },
+      {
+        path: 'admin/parametres',
+        canActivate: [roleGuard(['Admin'])],
+        loadComponent: () =>
+          import('./features/admin/admin-platform-settings/admin-platform-settings.component.js').then(
+            (m) => m.AdminPlatformSettingsComponent
+          )
+      },
+      {
+        path: 'parametres',
+        redirectTo: 'admin/parametres',
+        pathMatch: 'full'
       }
 
     ]

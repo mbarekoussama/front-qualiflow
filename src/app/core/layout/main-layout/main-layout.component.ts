@@ -57,7 +57,8 @@ export class MainLayoutComponent implements OnInit {
           items: [
             { label: 'Notifications', route: '/notifications' },
             { label: 'Utilisateurs', route: '/admin/utilisateurs' },
-            { label: 'Auth & Rôles', route: '/admin/auth-roles' }
+            { label: 'Auth & Rôles', route: '/admin/auth-roles' },
+            { label: 'Paramètres plateforme', route: '/admin/parametres' }
           ]
         }
       ];
@@ -99,6 +100,9 @@ export class MainLayoutComponent implements OnInit {
   });
 
   readonly roleLabel = computed(() => this.currentUser()?.role ?? '');
+  readonly settingsRoute = computed(() =>
+    this.authService.hasRole(['Admin']) ? '/admin/parametres' : '/notifications'
+  );
 
   async ngOnInit(): Promise<void> {
     await this.notificationService.loadUnreadCount();
